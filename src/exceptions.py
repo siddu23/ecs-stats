@@ -41,3 +41,15 @@ class LanguageRequired(Exception):
         self.message = 'language is mandatory'
     def __str__(self):
         return str(self.message)
+
+class FromSecRequired(Exception):
+    def __init__(self):
+        self.message = 'from sec is mandatory'
+    def __str__(self):
+        return str(self.message)
+
+class ToSecRequired(Exception):
+    def __init__(self):
+        self.message = 'to sec is mandatory'
+    def __str__(self):
+        return str(self.message)

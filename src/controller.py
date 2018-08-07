@@ -102,3 +102,69 @@ def get_recent_published(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@request_parser
+def get_read_time(**kwargs):
+    """get read time wise pratilipi"""
+    try:
+        # query param
+        kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
+        kwargs['category'] = kwargs['category'][0] if 'category' in kwargs else None
+        kwargs['from_sec'] = int(kwargs['fromsec'][0]) if 'fromsec' in kwargs else None
+        kwargs['to_sec'] = int(kwargs['tosec'][0]) if 'tosec' in kwargs else None
+        kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
+        kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+        print kwargs
+
+        # validate request
+        validate_read_time_request(kwargs)
+
+        # get pratilipis
+        pratilipis, total_pratilipis = cognition.get_read_time(kwargs)
+
+        # get authors related to pratilipis
+        author_ids = _join_authorids(pratilipis)
+        authors = cognition.get_authors(author_ids)
+        author_dict = _object_to_dict(authors)
+        print "hello 1"
+
+        # get ratings related to pratilipis
+        pratilipi_ids = _join_pratilipiids(pratilipis)
+        ratings = cognition.get_ratings(pratilipi_ids)
+        rating_dict = _object_to_dict(ratings)
+        print "hello 2"
+
+        # get library related to pratilipis
+        library_dict = {}
+        if kwargs['user_id'] > 0:
+            librarys = cognition.get_libray_added(kwargs['user_id'], pratilipi_ids)
+            library_dict = _object_to_dict(librarys)
+            print "hello 3"
+
+        response_kwargs = { 'pratilipis': pratilipis,
+                            'authors': author_dict,
+                            'ratings': rating_dict,
+                            'librarys': library_dict,
+                            'total_pratilipis': total_pratilipis,
+                            'limit': kwargs['limit'],
+                            'offset': kwargs['offset'] }
+
+        print "hello 4"
+        response = response_builder.for_all(response_kwargs)
+        print "hello 5"
+
+        return bottle.HTTPResponse(status=200, body=response)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except LanguageInvalid as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except FromSecRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except ToSecRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except PratilipiNotFound as err:
+        return bottle.HTTPResponse(status=404)
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+

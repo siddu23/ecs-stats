@@ -60,7 +60,7 @@ def _pratilipi_details(pratilipi, author, rating, add_to_lib):
     response = _set_key(response, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
 
     response = _set_key(response, 'coverImageUrl', _pratilipi_cover_image(pratilipi))
-    response = _set_key(response, 'averageRating', rating['avg_rating'])
+    response = _set_key(response, 'averageRating', rating.get('avg_rating', 0))
     response = _set_key(response, 'addToLib', add_to_lib)
 
     data = {}
