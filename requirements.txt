@@ -1,0 +1,11 @@
+# default required
+gunicorn==19.7.1
+gevent==1.2.2
+greenlet==0.4.12
+bottle==0.12.13
+
+# service specific
+mysql-connector==2.1.6
+PyMySQL==0.7.11
+python-dateutil==2.6.1
+pytz==2017.3
