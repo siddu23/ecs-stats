@@ -24,8 +24,8 @@ timeout = 60
 bind = 'unix:service.sock'
 
 #owner details
-user = os.environ['USER'] if os.environ['STAGE'] in ('local', 'devo') else 'root'
-group = os.environ['USER'] if os.environ['STAGE'] in ('local', 'devo') else 'www-data'
+user = os.environ['USER'] if os.environ['STAGE'] in ('local') else 'root'
+group = os.environ['USER'] if os.environ['STAGE'] in ('local') else 'www-data'
 umask = '007'
 
 #logging
