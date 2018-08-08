@@ -10,7 +10,7 @@ RUN mkdir -p /service
 
 # copy code
 COPY __init__.py wsgi.py gunicorn_conf.py app.py router.py /service/
-COPY requirements.txt /serive
+COPY requirements.txt /service
 COPY src /service
 COPY conf /service
 
