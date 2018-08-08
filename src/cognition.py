@@ -36,6 +36,7 @@ def get_libray_added(user_id, pratilipi_ids):
                  AND b.state = 'ADDED'
                  AND a.user_id = {}
                  AND b.reference_id IN ({})""".format(user_id, pratilipi_ids)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -60,6 +61,7 @@ def get_ratings(pratilipi_ids):
                  AND state = 'PUBLISHED'
                  AND reference_id IN ({})
                  GROUP BY 1""".format(pratilipi_ids)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -82,6 +84,7 @@ def get_authors(author_ids):
                  d.firstname_lastname, d.firstnameen_lastnameen, d.slug
                  FROM author.author d
                  WHERE d.id IN ({})""".format(author_ids)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -110,6 +113,7 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'""".format(kwargs['language'], kwargs['category'])
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -127,6 +131,7 @@ def get_recent_published(kwargs):
                  ORDER BY a.updated_at desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['limit'], kwargs['offset'])
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -158,6 +163,7 @@ def get_read_time(kwargs):
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
                  AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -179,6 +185,7 @@ def get_read_time(kwargs):
                  ORDER BY a.reading_time desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -217,6 +224,7 @@ def get_high_rated(kwargs):
                        GROUP BY 1
                        HAVING avg_rating > 3.9
                        AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'])
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -240,6 +248,7 @@ def get_high_rated(kwargs):
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['limit'], kwargs['offset'])
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
@@ -252,6 +261,7 @@ def get_high_rated(kwargs):
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at
                  FROM pratilipi.pratilipi a
                  WHERE a.id IN ({})""".format(pratilipi_ids)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:

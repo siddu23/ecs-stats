@@ -4,7 +4,7 @@ import response_builder
 import inspect
 
 from bottle import response, hook
-from commonfns import request_parser, log
+from commonfns import request_parser, log, timeit
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -48,6 +48,7 @@ def _object_to_dict(obj):
         obj_dict[i.id] = i.__dict__
     return obj_dict
 
+@timeit
 @request_parser
 def get_recent_published(**kwargs):
     """get recent published pratilipi"""
@@ -104,6 +105,7 @@ def get_recent_published(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
 @request_parser
 def get_read_time(**kwargs):
     """get read time wise pratilipi"""
@@ -166,6 +168,7 @@ def get_read_time(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
 @request_parser
 def get_high_rated(**kwargs):
     """get high rated pratilipi"""
