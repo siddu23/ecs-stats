@@ -9,7 +9,7 @@ RUN export TZ=Asia/Kolkata
 RUN mkdir -p /service
 
 # copy code
-COPY __init__.py wsgi.py gunicorn_conf.py app.py router.py /servive
+COPY __init__.py wsgi.py gunicorn_conf.py app.py router.py /service/
 COPY requirements.txt /serive
 COPY src /service
 COPY conf /service
