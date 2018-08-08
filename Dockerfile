@@ -11,8 +11,8 @@ RUN mkdir -p /service
 # copy code
 COPY __init__.py wsgi.py gunicorn_conf.py app.py router.py /service/
 COPY requirements.txt /service
-COPY -r src /service
-COPY -r conf /service
+COPY src/* /service/
+COPY conf/* /service/
 
 #setup nginx
 RUN rm /etc/nginx/sites-available/default
