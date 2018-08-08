@@ -2,6 +2,7 @@ import bottle
 import cognition
 import response_builder
 import inspect
+import sys
 
 from bottle import response, hook
 from commonfns import request_parser, log, timeit
@@ -94,6 +95,7 @@ def get_recent_published(**kwargs):
 
         response = response_builder.for_all(response_kwargs)
 
+        sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
@@ -153,6 +155,7 @@ def get_read_time(**kwargs):
 
         response = response_builder.for_all(response_kwargs)
 
+        sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
@@ -209,6 +212,7 @@ def get_high_rated(**kwargs):
 
         response = response_builder.for_all(response_kwargs)
 
+        sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
