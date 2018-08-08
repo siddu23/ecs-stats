@@ -61,7 +61,7 @@ def _pratilipi_details(pratilipi, author, rating, add_to_lib):
 
     response = _set_key(response, 'coverImageUrl', _pratilipi_cover_image(pratilipi))
     response = _set_key(response, 'averageRating', rating.get('avg_rating', 0))
-    response = _set_key(response, 'addToLib', add_to_lib)
+    #response = _set_key(response, 'addToLib', add_to_lib)
 
     data = {}
     data['authorId'] = pratilipi.author_id
@@ -97,7 +97,8 @@ def for_all(kwargs):
     response = _set_key(response, 'offset', kwargs['offset'])
     response = _set_key(response, 'pratilipiList', [])
     for pratilipi in pratilipis:
-        add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
+        #add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
+        add_to_lib = False
         data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], ratings[str(pratilipi.id)], add_to_lib)
         response['pratilipiList'].append(data)
     return json.dumps(response)
