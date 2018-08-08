@@ -9,7 +9,10 @@ RUN export TZ=Asia/Kolkata
 RUN mkdir -p /service
 
 # copy code
-COPY -r * /servive
+COPY *.py /servive
+COPY requirements.txt /serive
+COPY src /service
+COPY conf /service
 
 #setup nginx
 RUN rm /etc/nginx/sites-available/default
