@@ -2,6 +2,7 @@ import json
 
 from datetime import datetime
 from commonfns import timeit
+from pprint import pprint as p
 
 def _set_key(d, k, v):
     """set dict key if its value is not None"""
@@ -60,7 +61,7 @@ def _pratilipi_details(pratilipi, author, rating, add_to_lib):
     response = _set_key(response, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
 
     response = _set_key(response, 'coverImageUrl', _pratilipi_cover_image(pratilipi))
-    response = _set_key(response, 'averageRating', rating.get('avg_rating', 0))
+    response = _set_key(response, 'averageRating', rating)
     #response = _set_key(response, 'addToLib', add_to_lib)
 
     data = {}
@@ -99,6 +100,7 @@ def for_all(kwargs):
     for pratilipi in pratilipis:
         #add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
         add_to_lib = False
-        data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], ratings[str(pratilipi.id)], add_to_lib)
+        rating = ratings.get(str(pratilipi.id), 0)
+        data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], rating, add_to_lib)
         response['pratilipiList'].append(data)
     return json.dumps(response)
