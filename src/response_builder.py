@@ -100,7 +100,7 @@ def for_all(kwargs):
     for pratilipi in pratilipis:
         #add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
         add_to_lib = False
-        rating = ratings.get(str(pratilipi.id), 0)
+        rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0 
         data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], rating, add_to_lib)
         response['pratilipiList'].append(data)
     return json.dumps(response)
