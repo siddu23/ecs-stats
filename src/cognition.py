@@ -217,7 +217,6 @@ def get_high_rated(kwargs):
                        GROUP BY 1
                        HAVING avg_rating > 3.9
                        AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'])
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -241,7 +240,6 @@ def get_high_rated(kwargs):
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['limit'], kwargs['offset'])
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
@@ -254,7 +252,6 @@ def get_high_rated(kwargs):
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at
                  FROM pratilipi.pratilipi a
                  WHERE a.id IN ({})""".format(pratilipi_ids)
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
