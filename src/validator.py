@@ -27,3 +27,7 @@ def validate_read_time_request(req):
 
     if req['to_sec'] is None:
         raise ToSecRequired
+
+def validate_author_dashboard_request(req):
+    if req['author_id'] is None:
+        raise AuthorIdRequired
