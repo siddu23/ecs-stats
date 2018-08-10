@@ -312,7 +312,8 @@ def get_author_recommendations(**kwargs):
         print user_followed_authors
 
         for _id in user_followed_authors:
-            ids.remove(_id)
+                if _id in ids:
+                    ids.remove(_id)
 
         ids = ids[offset:(offset+limit)]
         idStr = ','.join(map(str, ids))
