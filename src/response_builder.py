@@ -187,6 +187,7 @@ def for_author_recommendations(kwargs):
     authors = kwargs['authors']
     cursor = kwargs['cursor']
     logged_user_id = kwargs['logged_user_id']
+    bucket = kwargs['bucket']
     for author in authors:
         response = {}
         response = _set_key(response, 'authorId', author.id)
@@ -200,5 +201,9 @@ def for_author_recommendations(kwargs):
         response = _set_key(response, 'following', False)
         response = _set_key(response, 'followCount', data[author.id]['followersCount'] if data != {} else 0)
         response_dict['authorList'].append(response)
+
+    meta = {}
+    meta['algorithmId'] = bucket    
+    response_dict['meta'] = meta
     response_dict['cursor'] = str(20 + int(cursor))
     return json.dumps(response_dict)
