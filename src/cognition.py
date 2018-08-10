@@ -267,3 +267,173 @@ def get_high_rated(kwargs):
             setattr(obj_list[indx], name, row[name])
     return obj_list, total_pratilipis, rating_dict
 
+def get_author_dashboard(kwargs):
+    """get author dashboard"""
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        author_id = kwargs['author_id']
+
+        # todays and total reads
+        sql = """SELECT total_read_count FROM author.author WHERE id = {}""".format(author_id)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        total_read_count = recordset.get('total_read_count', 0)
+
+        # get all pratilipis of an author
+        sql = """SELECT id, title, title_en, slug, slug_en, slug_id, cover_image, reading_time, read_count + read_count_offset as read_count
+                 FROM pratilipi.pratilipi
+                 WHERE author_id = {}
+                 AND state = "PUBLISHED"
+                 AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')""".format(author_id)
+        print sql
+        cursor.execute(sql)
+        pratilipis = cursor.fetchall()
+        pratilipiids = ','.join(["'{}'".format(i['id']) for i in pratilipis])
+        print "----------> ", pratilipiids
+
+        # total reviews
+        sql = """SELECT COUNT(*) as no_of_reviews
+                 FROM social.review
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = "PUBLISHED"
+                 AND review != ""
+                 AND reference_id IN ({})""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        total_reviews = recordset.get('no_of_reviews', 0)
+
+        # total followers
+        sql = """SELECT COUNT(*) AS no_of_followers
+                 FROM follow.follow 
+                 WHERE reference_type = "AUTHOR"
+                 AND reference_id = '{}'
+                 AND state = "FOLLOWING" """.format(author_id)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        total_no_of_followers = recordset.get('no_of_followers', 0)
+        
+        # todays content published
+        sql = """SELECT COUNT(*) as content_published
+                 FROM pratilipi.pratilipi
+                 WHERE author_id = {}
+                 AND state = "PUBLISHED"
+                 AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        todays_content_published = recordset.get('content_published', 0)
+
+        # new followers
+        sql = """SELECT COUNT(*) AS no_of_followers
+                 FROM follow.follow 
+                 WHERE reference_type = "AUTHOR"
+                 AND reference_id = '{}'
+                 AND state = "FOLLOWING"
+                 AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        todays_no_of_followers = recordset.get('no_of_followers', 0)
+
+        # new rating
+        sql = """SELECT ROUND(AVG(rating), 2) as avg_rating
+                 FROM social.review
+                 WHERE reference_type = "PRATILIPI" 
+                 AND state = 'PUBLISHED' 
+                 AND reference_id IN ({})
+                 AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        todays_avg_rating = recordset.get('avg_rating', 0)
+
+        # new #reviews
+        sql = """SELECT COUNT(*) as no_of_reviews
+                 FROM social.review
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = "PUBLISHED"
+                 AND review != ""
+                 AND reference_id IN ({})
+                 AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        recordset = cursor.fetchone()
+        todays_no_of_reviews = recordset.get('no_of_reviews', 0)
+
+        # most read contents
+        sql = """SELECT id, read_count + read_count_offset as read_count
+                 FROM pratilipi.pratilipi
+                 WHERE author_id = {}
+                 AND state = "PUBLISHED"
+                 AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 ORDER BY 2 desc
+                 LIMIT 3""".format(author_id)
+        print sql
+        cursor.execute(sql)
+        most_read = cursor.fetchall()
+
+        # highest engaged
+        sql = """SELECT reference_id as id, COUNT(*) as no_of_reviews
+                 FROM social.review 
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = "PUBLISHED"
+                 AND review != ""
+                 AND reference_id IN ({})
+                 GROUP BY 1
+                 ORDER BY 2 DESC 
+                 LIMIT 3""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        highest_engaged = cursor.fetchall()
+
+        # get no_of_review
+        sql = """SELECT reference_id as id, COUNT(*) as no_of_reviews
+                 FROM social.review
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = "PUBLISHED"
+                 AND review != ""
+                 AND reference_id IN ({})""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        pratilipis_review = cursor.fetchone()
+
+        # get no_of_followers 
+        sql = """SELECT reference_id as id, ROUND(AVG(rating), 2) as avg_rating
+                 FROM social.review
+                 WHERE reference_type = "PRATILIPI" 
+                 AND state = 'PUBLISHED' 
+                 AND reference_id IN ({})""".format(pratilipiids)
+        print sql
+        cursor.execute(sql)
+        pratilipis_rating = cursor.fetchone()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    pratilipi_details = {}
+    for i in pratilipis:
+        pratilipi_details[i['id']] = i
+
+    data = { "total_read_count": total_read_count,
+             "total_reviews": total_reviews,
+             "total_no_of_followers": total_no_of_followers,
+             "todays_no_of_followers": todays_no_of_followers,
+             "todays_content_published": todays_content_published,
+             "todays_no_of_followers": todays_no_of_followers,
+             "todays_avg_rating": todays_avg_rating,
+             "todays_no_of_reviews": todays_no_of_reviews,
+             "pratilipis_review": pratilipis_review,
+             "pratilipis_rating": pratilipis_rating,
+             "pratilipis": pratilipi_details,
+             "most_read": most_read,
+             "highest_engaged": highest_engaged,
+           }
+    print "<<<<< ================ >>>>>>>>> done from getting"
+    return  data
