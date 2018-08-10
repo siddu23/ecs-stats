@@ -9,6 +9,9 @@ from commonfns import request_parser, log, timeit
 from exceptions import *
 from validator import *
 from pprint import pprint as p
+from conf import author_recommend_one
+from conf import author_recommend_two
+from conf import author_recommend_three
 
 @hook('after_request')
 def set_content_type():
@@ -235,23 +238,85 @@ def get_high_rated(**kwargs):
 @request_parser
 def get_author_dashboard(**kwargs):
     """get author dashboard"""
-    print "-------------> im here", kwargs
-    # query param
-    kwargs['author_id'] = int(kwargs['authorid'][0]) if 'authorid' in kwargs else None
-    kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-    print "get_author_dashboard, ", kwargs
-
-    validate_author_dashboard_request(kwargs)
-    all_data = cognition.get_author_dashboard(kwargs)
-    response = response_builder.for_author_dashboard(all_data)
-
-    sys.stdout.flush()
-    return bottle.HTTPResponse(status=200, body=response)
-    """
     try:
+        print "-------------> im here", kwargs
+        # query param
+        kwargs['author_id'] = int(kwargs['authorid'][0]) if 'authorid' in kwargs else None
+        kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        print "get_author_dashboard, ", kwargs
+
+        validate_author_dashboard_request(kwargs)
+        all_data = cognition.get_author_dashboard(kwargs)
+        response = response_builder.for_author_dashboard(all_data)
+
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
     except AuthorIdRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
-    """
+
+def get_author_recommendations(**kwargs):
+    """ Recommend authors """
+    try:
+        # query param
+        language = kwargs['language'][0].lower() if 'language' in kwargs else None
+        offset = int(kwargs['cursor'][0]) if 'cursor' in kwargs else 0
+        bucket  = int(kwargs['bucket'][0]) if 'bucket' in kwargs else 1
+        user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        authors = []
+        author_ids = None
+        limit = 20
+        print language, offset, bucket, user_id, limit
+
+        if(bucket == 1):
+            author_ids = author_recommend_one
+        elif(bucket == 2):
+            author_ids = author_recommend_two
+        elif(bucket == 3):
+            author_ids = author_recommend_three
+   
+        if language == "hindi":
+            ids = author_ids.hindi_authors
+        elif language == "bengali":
+            ids = author_ids.bengali_authors
+        elif language == "gujarati":
+            ids = author_ids.gujarati_authors
+        elif language == "kannada":
+            ids = author_ids.kannada_authors
+        elif language == "malayalam":
+            ids = author_ids.malayalam_authors
+        elif language == "marathi":
+            ids = author_ids.marathi_authors
+        elif language == "tamil":
+            ids = author_ids.tamil_authors
+        elif language == "telugu":
+            ids = author_ids.telugu_authors
+        else:
+            return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
+
+        user_followed_authors = cognition.get_user_followed_authorIds(user_id)
+        print user_followed_authors
+
+        for _id in user_followed_authors:
+            ids.remove(_id)
+
+        ids = ids[offset:(offset+limit)]
+        idStr = ','.join(map(str, ids))
+        print "Getting authors for ", idStr 
+
+        authors = cognition.get_authors(idStr)
+        print authors
+
+        response_kwargs = {'authors':authors,
+                            'cursor':offset}
+
+        response = response_builder.for_author_recommendations(response_kwargs)
+ 
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
+        
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})

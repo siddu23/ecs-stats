@@ -180,3 +180,21 @@ def for_author_dashboard(kwargs):
     response['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
     return json.dumps(response)
 
+def for_author_recommendations(kwargs):
+    """author recommendations"""
+    response_dict = {'authorList': []} 
+    authors = kwargs['authors']
+    cursor = kwargs['cursor']
+    for author in authors:
+        response = {}
+        response = _set_key(response, 'authorId', author.id)
+        response = _set_key(response, 'firstName', author.first_name)
+        response = _set_key(response, 'name', author.first_name)
+        response = _set_key(response, 'contentPublished', author.content_published)
+        response = _set_key(response, 'totalReadCount', author.total_read_count)
+        response = _set_key(response, 'profileImageUrl', "")
+        response = _set_key(response, 'following', False)
+        response = _set_key(response, 'followCount', 0)
+        response_dict['authorList'].append(response)
+    response_dict['cursor'] = str(20 + int(cursor))
+    return json.dumps(response_dict)

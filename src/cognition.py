@@ -79,7 +79,8 @@ def get_authors(author_ids):
         cursor = conn.cursor()
 
         sql = """SELECT d.id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug
+                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug,
+                 d.content_published, d.total_read_count
                  FROM author.author d
                  WHERE d.id IN ({})""".format(author_ids)
         cursor.execute(sql)
@@ -412,10 +413,6 @@ def get_author_dashboard(kwargs):
         print sql
         cursor.execute(sql)
         pratilipis_rating = cursor.fetchone()
-    except Exception as err:
-        raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
 
     pratilipi_details = {}
     for i in pratilipis:
@@ -437,3 +434,19 @@ def get_author_dashboard(kwargs):
            }
     print "<<<<< ================ >>>>>>>>> done from getting"
     return  data
+
+def get_user_followed_authorIds(user_id):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING'""".format(user_id)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        author_ids = []
+        for i in record_set:
+            author_ids.append(i['reference_id'])
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return author_ids 
