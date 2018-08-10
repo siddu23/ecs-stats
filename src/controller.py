@@ -231,3 +231,27 @@ def get_high_rated(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
+def get_author_dashboard(**kwargs):
+    """get author dashboard"""
+    print "-------------> im here", kwargs
+    # query param
+    kwargs['author_id'] = int(kwargs['authorid'][0]) if 'authorid' in kwargs else None
+    kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+    print "get_author_dashboard, ", kwargs
+
+    validate_author_dashboard_request(kwargs)
+    all_data = cognition.get_author_dashboard(kwargs)
+    response = response_builder.for_author_dashboard(all_data)
+
+    sys.stdout.flush()
+    return bottle.HTTPResponse(status=200, body=response)
+    """
+    try:
+    except AuthorIdRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+    """
