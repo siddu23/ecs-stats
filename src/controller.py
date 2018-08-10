@@ -9,6 +9,9 @@ from commonfns import request_parser, log, timeit
 from exceptions import *
 from validator import *
 from pprint import pprint as p
+from conf import author_recommend_one as author_suggestions_one
+from conf import author_recommend_two as author_suggestions_two
+from conf import author_recommend_three as author_suggestions_three
 
 @hook('after_request')
 def set_content_type():
@@ -231,3 +234,55 @@ def get_high_rated(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
+def get_author_suggestions(**kwargs):
+    """ Suggest authors """
+    try:
+        # query param
+        language = kwargs['language'][0] if 'language' in kwargs else None
+        offset = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+        bucket  = int(kwargs['bucket'][0]) if 'bucket' in kwargs else 1
+        user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        suggestions = []
+        author_ids = None
+
+        print language, offset, bucket, user_id
+        if(bucket == 1):
+            author_ids = author_suggestions_one
+        elif(bucket == 2):
+            author_ids = author_suggestions_two
+        elif(bucket == 3):
+            author_ids = author_suggestions_three
+   
+        if language == "hindi":
+            ids = author_ids.hindi_authors[offset:(offset+limit)]
+        elif language == "bengali":
+            ids = author_ids.bengali_authors[offset:(offset+limit)]
+        elif language == "gujarati":
+            ids = author_ids.gujarati_authors[offset:(offset+limit)]
+        elif language == "kannada":
+            ids = author_ids.kannada_authors[offset:(offset+limit)]
+        elif language == "malayalam":
+            ids = author_ids.malayalam_authors[offset:(offset+limit)]
+        elif language == "marathi":
+            ids = author_ids.marathi_authors[offset:(offset+limit)]
+        elif language == "tamil":
+            ids = author_ids.tamil_authors[offset:(offset+limit)]
+        elif language == "telugu":
+            ids = author_ids.telugu_authors[offset:(offset+limit)]
+
+        user_followed_authors = cognition.get_user_followed_authorIds(user_id)
+        for _id in user_followed_authors:
+            author_ids.remove(_id)
+        
+        suggestions = cognition.get_authors(author_ids[offset:(offset+limit)])
+       
+        print suggestions
+ 
+        return suggestions
+        
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+        

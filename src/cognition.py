@@ -267,3 +267,19 @@ def get_high_rated(kwargs):
             setattr(obj_list[indx], name, row[name])
     return obj_list, total_pratilipis, rating_dict
 
+
+def get_user_followed_authorIds(user_id):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING'""".format(user_id)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        author_ids = []
+        for i in record_set:
+            author_ids.append(i['reference_id'])
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return author_ids 
