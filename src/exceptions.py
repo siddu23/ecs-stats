@@ -53,3 +53,10 @@ class ToSecRequired(Exception):
         self.message = 'to sec is mandatory'
     def __str__(self):
         return str(self.message)
+
+class AuthorIdRequired(Exception):
+    def __init__(self):
+        self.message = 'author id is mandatory'
+    def __str__(self):
+        return str(self.message)
+
