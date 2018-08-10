@@ -413,6 +413,10 @@ def get_author_dashboard(kwargs):
         print sql
         cursor.execute(sql)
         pratilipis_rating = cursor.fetchone()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
 
     pratilipi_details = {}
     for i in pratilipis:
