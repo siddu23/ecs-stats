@@ -17,4 +17,4 @@ def app_routes(app):
     app.route('/stats/v1.0/read_time', ['GET', 'OPTIONS'], controller.get_read_time)
 
     # /authors/recommendation 
-    app.route('/authors/recommendation', ['GET'], controller.get_author_suggestions)
+    app.route('/authors/recommendation', ['GET'], controller.get_author_recommendations)
