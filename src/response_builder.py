@@ -36,11 +36,11 @@ def _author_slug_details(author):
     response = _set_key(response, 'pageUrl', '/user/{}-{}'.format(author['firstname_lastname'], author['slug']))
     return response['pageUrl']
 
-def _pratilipi_cover_image(pratilipi):
-    pratilipi_id = int(pratilipi.id)
-    sub_domain_number = pratilipi_id % 5 if pratilipi.cover_image is not None else 0
+def _pratilipi_cover_image(pratilipi_id, cover_image):
+    pratilipi_id = int(pratilipi_id)
+    sub_domain_number = pratilipi_id % 5 if cover_image is not None else 0
     prefix = 'https://{}.ptlp.co'.format(sub_domain_number)
-    suffix = '/pratilipi/cover?apratilipiId={}&version={}'.format(pratilipi_id, pratilipi.cover_image) if pratilipi.cover_image is not None else '/pratilipi/cover'
+    suffix = '/pratilipi/cover?apratilipiId={}&version={}'.format(pratilipi_id, cover_image) if cover_image is not None else '/pratilipi/cover'
     return "{}{}".format(prefix,suffix)
 
 def _pratilipi_details(pratilipi, author, rating, add_to_lib):
@@ -60,7 +60,7 @@ def _pratilipi_details(pratilipi, author, rating, add_to_lib):
     response = _set_key(response, 'contentType', pratilipi.content_type)
     response = _set_key(response, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
 
-    response = _set_key(response, 'coverImageUrl', _pratilipi_cover_image(pratilipi))
+    response = _set_key(response, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
     response = _set_key(response, 'averageRating', "{0:.2f}".format(rating))
     #response = _set_key(response, 'addToLib', add_to_lib)
 
@@ -104,3 +104,79 @@ def for_all(kwargs):
         data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], rating, add_to_lib)
         response['pratilipiList'].append(data)
     return json.dumps(response)
+
+def for_author_dashboard(kwargs):
+    """for author dashboard"""
+    print "hello 1"
+    pratilipis = kwargs['pratilipis']
+    pratilipis_rating = kwargs['pratilipis_rating']
+    pratilipis_review = kwargs['pratilipis_review']
+
+    print "hello 2"
+    response = {}
+    temp = { 'readCount': kwargs['total_read_count'],
+            'follower': kwargs['total_no_of_followers'],
+            'reviewCount': kwargs['total_reviews'], 
+            'highestRating': 0 }
+    response = _set_key(response, 'total', temp)
+    print "hello 3"
+
+    temp = { 'contentPublished': kwargs['todays_content_published'],
+             'follower': kwargs['todays_no_of_followers'],
+             'readCount': kwargs['total_read_count'],
+             'reviewCount': kwargs['total_reviews'],
+             'avgRating': kwargs['todays_avg_rating'] }
+    response = _set_key(response, 'todays', temp)
+    print "hello 4"
+
+    response = _set_key(response, 'highestReviewedPratilipi', [])
+    response = _set_key(response, 'highestReadCountPratilipi', [])
+
+    highest_rating = 0
+
+    print "hello 5"
+    for pratilipi in kwargs['most_read']:
+        pid = pratilipi['id']
+        rating = pratilipis_rating.get(pid, None)
+        rating = pratilipis_rating[pid]['avg_rating'] if rating is not None else 0
+        review = pratilipis_review.get(pid, None)
+        review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
+
+        print " <<<<<<<<<<<<<<<<< >>>>>>>>>>>>>.", pratilipi
+        
+        temp = { 'pratilipiId': pid,
+                 'readingTime': pratilipis[pid]['reading_time'],
+                 'readCount': pratilipi['read_count'],
+                 'displayTitle': pratilipis[pid]['title'] if pratilipis[pid]['title'] != '' else pratilipis[pid]['title_en'],
+                 'pageUrl': '/story/{}-{}'.format(pratilipis[pid]['slug'], pratilipis[pid]['slug_id']),
+                 'coverImageUrl': _pratilipi_cover_image(pid, pratilipis[pid]['cover_image']),
+                 'avgRating': rating,
+                 'reviewCount': review,
+               }
+        response['highestReadCountPratilipi'].append(temp)
+        highest_rating = highest_rating + temp['avgRating']
+    print "hello 6"
+
+    for pratilipi in kwargs['highest_engaged']:
+        pid = pratilipi['id']
+        rating = pratilipis_rating.get(pid, None)
+        rating = pratilipis_rating[pid]['avg_rating'] if rating is not None else 0
+        review = pratilipis_review.get(pid, None)
+        review = pratilipis_review[pid]['no_of_reviews'] if rating is not None else 0
+
+        temp = { 'pratilipiId': pid,
+                 'readingTime': pratilipis[pid]['reading_time'],
+                 'readCount': pratilipi['read_count'],
+                 'displayTitle': pratilipis[pid]['title'] if pratilipis[pid]['title'] != '' else pratilipis[pid]['title_en'],
+                 'pageUrl': '/story/{}-{}'.format(pratilipis[pid]['slug'], pratilipis[pid]['slug_id']),
+                 'coverImageUrl': _pratilipi_cover_image(pid, pratilipis[pid]['cover_image']),
+                 'avgRating': rating,
+                 'reviewCount': review,
+               }
+        response['highestReviewedPratilipi'].append(temp)
+        highest_rating = highest_rating + temp['avgRating']
+    print "hello 7"
+
+    response['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
+    return json.dumps(response)
+
