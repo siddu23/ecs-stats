@@ -257,6 +257,8 @@ def get_author_dashboard(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
 def get_author_recommendations(**kwargs):
     """ Recommend authors """
     try:
