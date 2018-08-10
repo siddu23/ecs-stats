@@ -312,7 +312,8 @@ def get_author_recommendations(**kwargs):
         print authors
 
         response_kwargs = {'authors':authors,
-                            'cursor':offset}
+                            'cursor':offset,
+                            'logged_user_id':user_id}
 
         response = response_builder.for_author_recommendations(response_kwargs)
  

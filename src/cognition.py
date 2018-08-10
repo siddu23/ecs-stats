@@ -79,7 +79,7 @@ def get_authors(author_ids):
         cursor = conn.cursor()
 
         sql = """SELECT d.id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug,
+                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
                  d.content_published, d.total_read_count
                  FROM author.author d
                  WHERE d.id IN ({})""".format(author_ids)

@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from commonfns import timeit
 from pprint import pprint as p
+import supporting_services as supp_service
 
 def _set_key(d, k, v):
     """set dict key if its value is not None"""
@@ -185,6 +186,7 @@ def for_author_recommendations(kwargs):
     response_dict = {'authorList': []} 
     authors = kwargs['authors']
     cursor = kwargs['cursor']
+    logged_user_id = kwargs['logged_user_id']
     for author in authors:
         response = {}
         response = _set_key(response, 'authorId', author.id)
@@ -192,9 +194,11 @@ def for_author_recommendations(kwargs):
         response = _set_key(response, 'name', author.first_name)
         response = _set_key(response, 'contentPublished', author.content_published)
         response = _set_key(response, 'totalReadCount', author.total_read_count)
-        response = _set_key(response, 'profileImageUrl', "")
+        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author.id, author.profile_image, 'image'))
+
+        data = supp_service.follow_details([author.id], [logged_user_id], logged_user_id)
         response = _set_key(response, 'following', False)
-        response = _set_key(response, 'followCount', 0)
+        response = _set_key(response, 'followCount', data[author.id]['followersCount'] if data != {} else 0)
         response_dict['authorList'].append(response)
     response_dict['cursor'] = str(20 + int(cursor))
     return json.dumps(response_dict)

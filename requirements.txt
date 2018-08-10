@@ -3,6 +3,8 @@ gunicorn==19.7.1
 gevent==1.2.2
 greenlet==0.4.12
 bottle==0.12.13
+requests==2.18.4
+ujson==1.35
 
 # service specific
 mysql-connector==2.1.6
