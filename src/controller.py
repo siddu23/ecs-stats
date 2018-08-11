@@ -257,24 +257,36 @@ def get_author_dashboard(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
 def get_author_recommendations(**kwargs):
     """ Recommend authors """
     try:
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else None
         offset = int(kwargs['cursor'][0]) if 'cursor' in kwargs else 0
-        bucket  = int(kwargs['bucket'][0]) if 'bucket' in kwargs else 1
+        #bucket  = int(kwargs['bucket'][0]) if 'bucket' in kwargs else 1
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         authors = []
         author_ids = None
         limit = 20
+        bucket = 'A1' 
+        temp = user_id % 10
+        
+        if temp <= 3:
+            bucket = 'A1'
+        elif temp <= 6:
+            bucket = 'A2'
+        elif temp <=9:
+            bucket = 'A3'
+
         print language, offset, bucket, user_id, limit
 
-        if(bucket == 1):
+        if(bucket == 'A1'):
             author_ids = author_recommend_one
-        elif(bucket == 2):
+        elif(bucket == 'A2'):
             author_ids = author_recommend_two
-        elif(bucket == 3):
+        elif(bucket == 'A3'):
             author_ids = author_recommend_three
    
         if language == "hindi":
@@ -300,7 +312,10 @@ def get_author_recommendations(**kwargs):
         print user_followed_authors
 
         for _id in user_followed_authors:
-            ids.remove(_id)
+            try:
+                ids.remove(_id)
+            except:
+                continue
 
         ids = ids[offset:(offset+limit)]
         idStr = ','.join(map(str, ids))
@@ -310,7 +325,9 @@ def get_author_recommendations(**kwargs):
         print authors
 
         response_kwargs = {'authors':authors,
-                            'cursor':offset}
+                            'cursor':offset,
+                            'logged_user_id':user_id,
+                            'bucket':bucket}
 
         response = response_builder.for_author_recommendations(response_kwargs)
  
