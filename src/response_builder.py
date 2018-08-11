@@ -167,7 +167,7 @@ def for_author_dashboard(kwargs):
         print "----> xxx ", pid
         review = pratilipis_review.get(pid, None)
         print "----> xxxx ", pid
-        review = pratilipis_review[pid]['no_of_reviews'] if rating is not None else 0
+        review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
         print "----> xxxxx ", pid
 
         temp = { 'pratilipiId': pid,
