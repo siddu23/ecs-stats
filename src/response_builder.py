@@ -168,7 +168,7 @@ def for_author_dashboard(kwargs):
         pid = int(pid)
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
-                 'readCount': pratilipi['read_count'],
+                 'readCount': pratilipis[pid]['read_count'],
                  'displayTitle': pratilipis[pid]['title'] if pratilipis[pid]['title'] != '' else pratilipis[pid]['title_en'],
                  'pageUrl': '/story/{}-{}'.format(pratilipis[pid]['slug'], pratilipis[pid]['slug_id']),
                  'coverImageUrl': _pratilipi_cover_image(pid, pratilipis[pid]['cover_image']),
