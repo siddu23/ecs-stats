@@ -165,9 +165,7 @@ def for_author_dashboard(kwargs):
         review = pratilipis_review.get(pid, None)
         review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
 
-        print "----> x ", pratilipis[pid]
-        print "----> xx ", pratilipi
-        
+        pid = int(pid)
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
                  'readCount': pratilipi['read_count'],
