@@ -159,10 +159,15 @@ def for_author_dashboard(kwargs):
 
     for pratilipi in kwargs['highest_engaged']:
         pid = pratilipi['id']
+        print "----> x ", pid
         rating = pratilipis_rating.get(pid, None)
+        print "----> xx ", pid
         rating = pratilipis_rating[pid]['avg_rating'] if rating is not None else 0
+        print "----> xxx ", pid
         review = pratilipis_review.get(pid, None)
+        print "----> xxxx ", pid
         review = pratilipis_review[pid]['no_of_reviews'] if rating is not None else 0
+        print "----> xxxxx ", pid
 
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
@@ -173,6 +178,7 @@ def for_author_dashboard(kwargs):
                  'avgRating': rating,
                  'reviewCount': review,
                }
+        print "----> xxxxxx ", pid
         response['highestReviewedPratilipi'].append(temp)
         highest_rating = highest_rating + temp['avgRating']
     print "hello 7"
