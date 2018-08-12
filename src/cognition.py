@@ -411,6 +411,14 @@ def get_author_dashboard(kwargs):
     for i in pratilipis:
         pratilipi_details[i['id']] = i
 
+    review_details = {}
+    for i in pratilipis_review:
+        review_details[i['id']] = i
+
+    rating_details = {}
+    for i in pratilipis_rating:
+        rating_details[i['id']] = i
+
     data = { "total_read_count": total_read_count,
              "total_reviews": total_reviews,
              "total_no_of_followers": total_no_of_followers,
@@ -419,8 +427,8 @@ def get_author_dashboard(kwargs):
              "todays_no_of_followers": todays_no_of_followers,
              "todays_avg_rating": todays_avg_rating,
              "todays_no_of_reviews": todays_no_of_reviews,
-             "pratilipis_review": pratilipis_review,
-             "pratilipis_rating": pratilipis_rating,
+             "pratilipis_review": review_details,
+             "pratilipis_rating": rating_details,
              "pratilipis": pratilipi_details,
              "most_read": most_read,
              "highest_engaged": highest_engaged,
