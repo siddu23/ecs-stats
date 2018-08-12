@@ -41,7 +41,7 @@ def _pratilipi_cover_image(pratilipi_id, cover_image):
     pratilipi_id = int(pratilipi_id)
     sub_domain_number = pratilipi_id % 5 if cover_image is not None else 0
     prefix = 'https://{}.ptlp.co'.format(sub_domain_number)
-    suffix = '/pratilipi/cover?apratilipiId={}&version={}'.format(pratilipi_id, cover_image) if cover_image is not None else '/pratilipi/cover'
+    suffix = '/pratilipi/cover?pratilipiId={}&version={}'.format(pratilipi_id, cover_image) if cover_image is not None else '/pratilipi/cover'
     return "{}{}".format(prefix,suffix)
 
 def _pratilipi_details(pratilipi, author, rating, add_to_lib):
@@ -165,7 +165,6 @@ def for_author_dashboard(kwargs):
         review = pratilipis_review.get(pid, None)
         review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
 
-        pid = int(pid)
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
                  'readCount': pratilipis[pid]['read_count'],

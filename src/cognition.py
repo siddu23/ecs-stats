@@ -380,7 +380,7 @@ def get_author_dashboard(kwargs):
         most_read = cursor.fetchall()
 
         # highest engaged
-        sql = """SELECT reference_id as id, COUNT(*) as no_of_reviews
+        sql = """SELECT CAST(reference_id AS SIGNED) as id, COUNT(*) as no_of_reviews
                  FROM social.review 
                  WHERE reference_type = "PRATILIPI"
                  AND state = "PUBLISHED"
@@ -394,22 +394,24 @@ def get_author_dashboard(kwargs):
         highest_engaged = cursor.fetchall()
 
         # get no_of_review
-        sql = """SELECT reference_id as id, COUNT(*) as no_of_reviews
+        sql = """SELECT CAST(reference_id AS SIGNED) as id, COUNT(*) as no_of_reviews
                  FROM social.review
                  WHERE reference_type = "PRATILIPI"
                  AND state = "PUBLISHED"
                  AND review != ""
-                 AND reference_id IN ({})""".format(pratilipiids)
+                 AND reference_id IN ({})
+                 GROUP BY 1""".format(pratilipiids)
         print sql
         cursor.execute(sql)
         pratilipis_review = cursor.fetchone()
 
         # get no_of_followers 
-        sql = """SELECT reference_id as id, ROUND(AVG(rating), 2) as avg_rating
+        sql = """SELECT CAST(reference_id AS SIGNED) as id, ROUND(AVG(rating), 2) as avg_rating
                  FROM social.review
                  WHERE reference_type = "PRATILIPI" 
                  AND state = 'PUBLISHED' 
-                 AND reference_id IN ({})""".format(pratilipiids)
+                 AND reference_id IN ({})
+                 GROUP BY 1""".format(pratilipiids)
         print sql
         cursor.execute(sql)
         pratilipis_rating = cursor.fetchone()
