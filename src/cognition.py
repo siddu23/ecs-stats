@@ -278,7 +278,6 @@ def get_author_dashboard(kwargs):
 
         # todays and total reads
         sql = """SELECT total_read_count FROM author.author WHERE id = {}""".format(author_id)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         total_read_count = recordset.get('total_read_count', 0)
@@ -289,11 +288,9 @@ def get_author_dashboard(kwargs):
                  WHERE author_id = {}
                  AND state = "PUBLISHED"
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')""".format(author_id)
-        print sql
         cursor.execute(sql)
         pratilipis = cursor.fetchall()
         pratilipiids = ','.join(["'{}'".format(i['id']) for i in pratilipis])
-        print "----------> ", pratilipiids
 
         # total reviews
         sql = """SELECT COUNT(*) as no_of_reviews
@@ -302,7 +299,6 @@ def get_author_dashboard(kwargs):
                  AND state = "PUBLISHED"
                  AND review != ""
                  AND reference_id IN ({})""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         total_reviews = recordset.get('no_of_reviews', 0)
@@ -313,7 +309,6 @@ def get_author_dashboard(kwargs):
                  WHERE reference_type = "AUTHOR"
                  AND reference_id = '{}'
                  AND state = "FOLLOWING" """.format(author_id)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         total_no_of_followers = recordset.get('no_of_followers', 0)
@@ -324,8 +319,7 @@ def get_author_dashboard(kwargs):
                  WHERE author_id = {}
                  AND state = "PUBLISHED"
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                 AND updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
-        print sql
+                 AND metainfo_updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_content_published = recordset.get('content_published', 0)
@@ -337,7 +331,6 @@ def get_author_dashboard(kwargs):
                  AND reference_id = '{}'
                  AND state = "FOLLOWING"
                  AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_no_of_followers = recordset.get('no_of_followers', 0)
@@ -349,7 +342,6 @@ def get_author_dashboard(kwargs):
                  AND state = 'PUBLISHED' 
                  AND reference_id IN ({})
                  AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_avg_rating = recordset.get('avg_rating', 0)
@@ -362,7 +354,6 @@ def get_author_dashboard(kwargs):
                  AND review != ""
                  AND reference_id IN ({})
                  AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_no_of_reviews = recordset.get('no_of_reviews', 0)
@@ -375,7 +366,6 @@ def get_author_dashboard(kwargs):
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  ORDER BY 2 desc
                  LIMIT 3""".format(author_id)
-        print sql
         cursor.execute(sql)
         most_read = cursor.fetchall()
 
@@ -389,7 +379,6 @@ def get_author_dashboard(kwargs):
                  GROUP BY 1
                  ORDER BY 2 DESC 
                  LIMIT 3""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
         highest_engaged = cursor.fetchall()
 
@@ -401,9 +390,8 @@ def get_author_dashboard(kwargs):
                  AND review != ""
                  AND reference_id IN ({})
                  GROUP BY 1""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
-        pratilipis_review = cursor.fetchone()
+        pratilipis_review = cursor.fetchall()
 
         # get no_of_followers 
         sql = """SELECT CAST(reference_id AS SIGNED) as id, ROUND(AVG(rating), 2) as avg_rating
@@ -412,9 +400,8 @@ def get_author_dashboard(kwargs):
                  AND state = 'PUBLISHED' 
                  AND reference_id IN ({})
                  GROUP BY 1""".format(pratilipiids)
-        print sql
         cursor.execute(sql)
-        pratilipis_rating = cursor.fetchone()
+        pratilipis_rating = cursor.fetchall()
     except Exception as err:
         raise DbSelectError(err)
     finally:
@@ -438,7 +425,6 @@ def get_author_dashboard(kwargs):
              "most_read": most_read,
              "highest_engaged": highest_engaged,
            }
-    print "<<<<< ================ >>>>>>>>> done from getting"
     return  data
 
 def get_user_followed_authorIds(user_id):
