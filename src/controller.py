@@ -63,7 +63,6 @@ def get_recent_published(**kwargs):
         kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
         kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
-        print "get_recent_published, ", kwargs
 
         # validate request
         validate_request(kwargs)
@@ -124,7 +123,6 @@ def get_read_time(**kwargs):
         kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
         kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
-        print "get_read_time, ", kwargs
 
         # validate request
         validate_read_time_request(kwargs)
@@ -187,7 +185,6 @@ def get_high_rated(**kwargs):
         kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
         kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
-        print "get_high_rated, ", kwargs
 
         # validate request
         validate_request(kwargs)
@@ -239,11 +236,9 @@ def get_high_rated(**kwargs):
 def get_author_dashboard(**kwargs):
     """get author dashboard"""
     try:
-        print "-------------> im here", kwargs
         # query param
         kwargs['author_id'] = int(kwargs['authorid'][0]) if 'authorid' in kwargs else None
         kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-        print "get_author_dashboard, ", kwargs
 
         validate_author_dashboard_request(kwargs)
         all_data = cognition.get_author_dashboard(kwargs)
