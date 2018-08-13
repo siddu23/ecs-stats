@@ -108,19 +108,16 @@ def for_all(kwargs):
 
 def for_author_dashboard(kwargs):
     """for author dashboard"""
-    print "hello 1"
     pratilipis = kwargs['pratilipis']
     pratilipis_rating = kwargs['pratilipis_rating']
     pratilipis_review = kwargs['pratilipis_review']
 
-    print "hello 2"
     response = {}
     temp = { 'readCount': kwargs['total_read_count'],
             'follower': kwargs['total_no_of_followers'],
             'reviewCount': kwargs['total_reviews'], 
             'highestRating': 0 }
     response = _set_key(response, 'total', temp)
-    print "hello 3"
 
     temp = { 'contentPublished': kwargs['todays_content_published'],
              'follower': kwargs['todays_no_of_followers'],
@@ -128,14 +125,12 @@ def for_author_dashboard(kwargs):
              'reviewCount': kwargs['total_reviews'],
              'avgRating': kwargs['todays_avg_rating'] }
     response = _set_key(response, 'todays', temp)
-    print "hello 4"
 
     response = _set_key(response, 'highestReviewedPratilipi', [])
     response = _set_key(response, 'highestReadCountPratilipi', [])
 
     highest_rating = 0
 
-    print "hello 5"
     for pratilipi in kwargs['most_read']:
         pid = pratilipi['id']
         rating = pratilipis_rating.get(pid, None)
@@ -143,8 +138,6 @@ def for_author_dashboard(kwargs):
         review = pratilipis_review.get(pid, None)
         review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
 
-        print " <<<<<<<<<<<<<<<<< >>>>>>>>>>>>>.", pratilipi
-        
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
                  'readCount': pratilipi['read_count'],
@@ -155,8 +148,8 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReadCountPratilipi'].append(temp)
-        highest_rating = highest_rating + temp['avgRating']
-    print "hello 6"
+        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        print "---------->", highest_rating, temp['avgRating']
 
     for pratilipi in kwargs['highest_engaged']:
         pid = pratilipi['id']
@@ -175,10 +168,11 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReviewedPratilipi'].append(temp)
-        highest_rating = highest_rating + temp['avgRating']
-    print "hello 7"
+        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        print "---------->", highest_rating, temp['avgRating']
 
     response['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
+    print "------------->>", response['highestRating']
     return json.dumps(response)
 
 def for_author_recommendations(kwargs):
