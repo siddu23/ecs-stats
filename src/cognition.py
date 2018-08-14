@@ -110,7 +110,8 @@ def get_recent_published(kwargs):
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND a.language = '{}'
                  AND b.name_en = '{}'
-                 AND b.type = 'SYSTEM'""".format(kwargs['language'], kwargs['category'])
+                 AND b.type = 'SYSTEM'
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -125,9 +126,10 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
+                 AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.updated_at desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
@@ -214,10 +216,11 @@ def get_high_rated(kwargs):
                                               AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                                               AND a.language = '{}'
                                               AND b.name_en = '{}'
-                                              AND b.type = 'SYSTEM')
+                                              AND b.type = 'SYSTEM'
+                                              AND a.reading_time BETWEEN {} AND {})
                        GROUP BY 1
                        HAVING avg_rating > 3.9
-                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'])
+                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -234,13 +237,14 @@ def get_high_rated(kwargs):
                                                AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                                                AND a.language = '{}'
                                                AND b.name_en = '{}'
-                                               AND b.type = 'SYSTEM')
+                                               AND b.type = 'SYSTEM'
+                                               AND a.reading_time BETWEEN {} AND {})
                  GROUP BY 1
                  HAVING avg_rating > 3.9
                  AND no_of_rating > 19
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
