@@ -115,6 +115,7 @@ def get_recent_published(kwargs):
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
+        if total_pratilipis == 0: raise PratilipiNotFound
 
         sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count, 
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at
@@ -132,6 +133,8 @@ def get_recent_published(kwargs):
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
+    except PratilipiNotFound as err:
+        raise PratilipiNotFound
     except Exception as err:
         raise DbSelectError(err)
     finally:
@@ -164,6 +167,7 @@ def get_read_time(kwargs):
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
+        if total_pratilipis == 0: raise PratilipiNotFound
 
         sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count, 
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at,
@@ -184,6 +188,8 @@ def get_read_time(kwargs):
                  OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
+    except PratilipiNotFound as err:
+        raise PratilipiNotFound
     except Exception as err:
         raise DbSelectError(err)
     finally:
@@ -224,6 +230,7 @@ def get_high_rated(kwargs):
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
+        if total_pratilipis == 0: raise PratilipiNotFound
 
         sql = """SELECT reference_id as pratilipi_id, avg(rating) as avg_rating, COUNT(*) as no_of_rating
                  FROM social.review d
@@ -259,6 +266,8 @@ def get_high_rated(kwargs):
                  WHERE a.id IN ({})""".format(pratilipi_ids)
         cursor.execute(sql)
         record_set = cursor.fetchall()
+    except PratilipiNotFound as err:
+        raise PratilipiNotFound
     except Exception as err:
         raise DbSelectError(err)
     finally:
