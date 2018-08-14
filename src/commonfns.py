@@ -77,3 +77,13 @@ def timeit(method):
         return result
     return timed
 
+def transform_request(kwargs):
+    kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
+    kwargs['category'] = kwargs['category'][0] if 'category' in kwargs else None
+    kwargs['from_sec'] = int(kwargs['fromsec'][0]) if 'fromsec' in kwargs else 0
+    kwargs['to_sec'] = int(kwargs['tosec'][0]) if 'tosec' in kwargs else 9999999
+    kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+    kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
+    kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+    return kwargs
+
