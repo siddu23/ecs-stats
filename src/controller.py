@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit
+from commonfns import request_parser, log, timeit, transform_request
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -58,11 +58,7 @@ def get_recent_published(**kwargs):
     """get recent published pratilipi"""
     try:
         # query param
-        kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
-        kwargs['category'] = kwargs['category'][0] if 'category' in kwargs else None
-        kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-        kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
-        kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+        kwargs = transform_request(kwargs)
 
         # validate request
         validate_request(kwargs)
@@ -116,13 +112,7 @@ def get_read_time(**kwargs):
     """get read time wise pratilipi"""
     try:
         # query param
-        kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
-        kwargs['category'] = kwargs['category'][0] if 'category' in kwargs else None
-        kwargs['from_sec'] = int(kwargs['fromsec'][0]) if 'fromsec' in kwargs else None
-        kwargs['to_sec'] = int(kwargs['tosec'][0]) if 'tosec' in kwargs else None
-        kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-        kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
-        kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+        kwargs = transform_request(kwargs)
 
         # validate request
         validate_read_time_request(kwargs)
@@ -180,11 +170,7 @@ def get_high_rated(**kwargs):
     """get high rated pratilipi"""
     try:
         # query param
-        kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
-        kwargs['category'] = kwargs['category'][0] if 'category' in kwargs else None
-        kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-        kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
-        kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+        kwargs = transform_request(kwargs)
 
         # validate request
         validate_request(kwargs)
