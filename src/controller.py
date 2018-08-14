@@ -92,9 +92,7 @@ def get_recent_published(**kwargs):
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
-        print "got data"
         response = response_builder.for_all(response_kwargs)
-        print "built response"
 
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
@@ -148,9 +146,7 @@ def get_read_time(**kwargs):
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
-        print "got data"
         response = response_builder.for_all(response_kwargs)
-        print "built response"
 
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
@@ -203,9 +199,7 @@ def get_high_rated(**kwargs):
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
-        print "got data"
         response = response_builder.for_all(response_kwargs)
-        print "built response"
 
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
