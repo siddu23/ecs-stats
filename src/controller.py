@@ -280,7 +280,7 @@ def get_author_recommendations(**kwargs):
         elif temp <=9:
             bucket = 'A3'
 
-        print language, offset, bucket, user_id, limit
+        #print language, offset, bucket, user_id, limit
 
         if(bucket == 'A1'):
             author_ids = author_recommend_one
@@ -309,18 +309,19 @@ def get_author_recommendations(**kwargs):
             return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
 
         user_followed_authors = cognition.get_user_followed_authorIds(user_id)
-        print user_followed_authors
+        #print user_followed_authors
 
+        authors = []
         for _id in user_followed_authors:
                 if _id in ids:
                     ids.remove(_id)
-
+            
         ids = ids[offset:(offset+limit)]
         idStr = ','.join(map(str, ids))
-        print "Getting authors for ", idStr 
-
-        authors = cognition.get_authors(idStr)
-        print authors
+            #print "Getting authors for ", idStr 
+        if(len(idStr) > 0):
+            authors = cognition.get_authors(idStr)
+            #print authors
 
         response_kwargs = {'authors':authors,
                             'cursor':offset,
