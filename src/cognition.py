@@ -349,7 +349,7 @@ def get_author_dashboard(kwargs):
         todays_no_of_followers = recordset.get('no_of_followers', 0)
 
         # new rating
-        sql = """SELECT ROUND(AVG(rating), 2) as avg_rating
+        sql = """SELECT COUNT(*) as no_of_rating
                  FROM social.review
                  WHERE reference_type = "PRATILIPI" 
                  AND state = 'PUBLISHED' 
@@ -357,7 +357,7 @@ def get_author_dashboard(kwargs):
                  AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
         cursor.execute(sql)
         recordset = cursor.fetchone()
-        todays_avg_rating = recordset.get('avg_rating', 0)
+        todays_no_of_rating = recordset.get('no_of_rating', 0)
 
         # new #reviews
         sql = """SELECT COUNT(*) as no_of_reviews
@@ -438,7 +438,7 @@ def get_author_dashboard(kwargs):
              "todays_no_of_followers": todays_no_of_followers,
              "todays_content_published": todays_content_published,
              "todays_no_of_followers": todays_no_of_followers,
-             "todays_avg_rating": todays_avg_rating,
+             "todays_no_of_rating": todays_no_of_rating,
              "todays_no_of_reviews": todays_no_of_reviews,
              "pratilipis_review": review_details,
              "pratilipis_rating": rating_details,
