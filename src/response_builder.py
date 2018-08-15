@@ -122,8 +122,8 @@ def for_author_dashboard(kwargs):
     temp = { 'contentPublished': kwargs['todays_content_published'],
              'follower': kwargs['todays_no_of_followers'],
              'readCount': kwargs['total_read_count'],
-             'reviewCount': kwargs['total_reviews'],
-             'avgRating': kwargs['todays_avg_rating'] }
+             'reviewCount': kwargs['todays_no_of_reviews'],
+             'ratingCount': kwargs['todays_no_of_rating'] }
     response = _set_key(response, 'todays', temp)
 
     response = _set_key(response, 'highestReviewedPratilipi', [])
