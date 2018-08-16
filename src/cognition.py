@@ -111,6 +111,7 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
+                 AND a.type = 'STORY'
                  AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
@@ -127,6 +128,7 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
+                 AND a.type = 'STORY'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.updated_at desc
                  LIMIT {}
@@ -163,6 +165,7 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
+                 AND a.type = 'STORY'
                  AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
@@ -182,6 +185,7 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
+                 AND a.type = 'STORY'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.reading_time desc
                  LIMIT {}
@@ -223,6 +227,7 @@ def get_high_rated(kwargs):
                                               AND a.language = '{}'
                                               AND b.name_en = '{}'
                                               AND b.type = 'SYSTEM'
+                                              AND a.type = 'STORY'
                                               AND a.reading_time BETWEEN {} AND {})
                        GROUP BY 1
                        HAVING avg_rating > 3.9
@@ -245,6 +250,7 @@ def get_high_rated(kwargs):
                                                AND a.language = '{}'
                                                AND b.name_en = '{}'
                                                AND b.type = 'SYSTEM'
+                                               AND a.type = 'STORY'
                                                AND a.reading_time BETWEEN {} AND {})
                  GROUP BY 1
                  HAVING avg_rating > 3.9
