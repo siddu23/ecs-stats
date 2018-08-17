@@ -41,7 +41,7 @@ def _pratilipi_cover_image(pratilipi_id, cover_image):
     pratilipi_id = int(pratilipi_id)
     sub_domain_number = pratilipi_id % 5 if cover_image is not None else 0
     prefix = 'https://{}.ptlp.co'.format(sub_domain_number)
-    suffix = '/pratilipi/cover?apratilipiId={}&version={}'.format(pratilipi_id, cover_image) if cover_image is not None else '/pratilipi/cover'
+    suffix = '/pratilipi/cover?pratilipiId={}&version={}'.format(pratilipi_id, cover_image) if cover_image is not None else '/pratilipi/cover'
     return "{}{}".format(prefix,suffix)
 
 def _pratilipi_details(pratilipi, author, rating, add_to_lib):
@@ -108,34 +108,29 @@ def for_all(kwargs):
 
 def for_author_dashboard(kwargs):
     """for author dashboard"""
-    print "hello 1"
     pratilipis = kwargs['pratilipis']
     pratilipis_rating = kwargs['pratilipis_rating']
     pratilipis_review = kwargs['pratilipis_review']
 
-    print "hello 2"
     response = {}
     temp = { 'readCount': kwargs['total_read_count'],
             'follower': kwargs['total_no_of_followers'],
             'reviewCount': kwargs['total_reviews'], 
             'highestRating': 0 }
     response = _set_key(response, 'total', temp)
-    print "hello 3"
 
     temp = { 'contentPublished': kwargs['todays_content_published'],
              'follower': kwargs['todays_no_of_followers'],
              'readCount': kwargs['total_read_count'],
-             'reviewCount': kwargs['total_reviews'],
-             'avgRating': kwargs['todays_avg_rating'] }
+             'reviewCount': kwargs['todays_no_of_reviews'],
+             'ratingCount': kwargs['todays_no_of_rating'] }
     response = _set_key(response, 'todays', temp)
-    print "hello 4"
 
     response = _set_key(response, 'highestReviewedPratilipi', [])
     response = _set_key(response, 'highestReadCountPratilipi', [])
 
     highest_rating = 0
 
-    print "hello 5"
     for pratilipi in kwargs['most_read']:
         pid = pratilipi['id']
         rating = pratilipis_rating.get(pid, None)
@@ -143,8 +138,6 @@ def for_author_dashboard(kwargs):
         review = pratilipis_review.get(pid, None)
         review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
 
-        print " <<<<<<<<<<<<<<<<< >>>>>>>>>>>>>.", pratilipi
-        
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
                  'readCount': pratilipi['read_count'],
@@ -155,19 +148,18 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReadCountPratilipi'].append(temp)
-        highest_rating = highest_rating + temp['avgRating']
-    print "hello 6"
+        highest_rating = int(highest_rating) + int(temp['avgRating'])
 
     for pratilipi in kwargs['highest_engaged']:
         pid = pratilipi['id']
         rating = pratilipis_rating.get(pid, None)
         rating = pratilipis_rating[pid]['avg_rating'] if rating is not None else 0
         review = pratilipis_review.get(pid, None)
-        review = pratilipis_review[pid]['no_of_reviews'] if rating is not None else 0
+        review = pratilipis_review[pid]['no_of_reviews'] if review is not None else 0
 
         temp = { 'pratilipiId': pid,
                  'readingTime': pratilipis[pid]['reading_time'],
-                 'readCount': pratilipi['read_count'],
+                 'readCount': pratilipis[pid]['read_count'],
                  'displayTitle': pratilipis[pid]['title'] if pratilipis[pid]['title'] != '' else pratilipis[pid]['title_en'],
                  'pageUrl': '/story/{}-{}'.format(pratilipis[pid]['slug'], pratilipis[pid]['slug_id']),
                  'coverImageUrl': _pratilipi_cover_image(pid, pratilipis[pid]['cover_image']),
@@ -175,8 +167,7 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReviewedPratilipi'].append(temp)
-        highest_rating = highest_rating + temp['avgRating']
-    print "hello 7"
+        highest_rating = int(highest_rating) + int(temp['avgRating'])
 
     response['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
     return json.dumps(response)
