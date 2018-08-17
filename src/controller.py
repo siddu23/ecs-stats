@@ -264,7 +264,7 @@ def get_author_recommendations(**kwargs):
     try:
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else None
-        offset = int(kwargs['cursor'][0]) if 'cursor' in kwargs else 0
+        offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
         #bucket  = int(kwargs['bucket'][0]) if 'bucket' in kwargs else 1
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         authors = []
@@ -272,6 +272,11 @@ def get_author_recommendations(**kwargs):
         limit = 20
         bucket = 'A1' 
         temp = user_id % 10
+
+        if offset == None or offset == "null":
+            offset = 0
+        else:
+            offset = int(offset) 
         
         if temp <= 3:
             bucket = 'A1'
