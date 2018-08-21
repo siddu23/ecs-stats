@@ -471,36 +471,47 @@ def get_user_followed_authorIds(user_id):
     return author_ids
 
 def get_user_feed(user_id, offset):
-    limit = 100
+    limit = 200
     loop_count = 0
 
     user_following_author_list = []
     pratilipi_published_list = []
     pratilipi_rated_list = []
+    user_following_author_list = get_user_following(user_id, limit)
+    block_pratilipi_calls = False
+    block_rated_pratilipi_calls = False
+    print(user_following_author_list)
+    if len(user_following_author_list):
+        while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
+            print("loop count is ", loop_count)
 
-    while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
-        print("loop count is ", loop_count)
-        user_following_author_list = get_user_following(user_id, limit, offset)
-        print(user_following_author_list)
+            if block_rated_pratilipi_calls and block_pratilipi_calls:
+                break
 
-        if len(user_following_author_list) > 0:
-            user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list)
-            print(user_following_user_id_list)
+            if len(user_following_author_list) > 0:
+                user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list)
 
-            pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list)
+                pratilipis = []
+                rated_pratilipi = []
 
-            if len(pratilipis) > 0:
-                pratilipi_published_list.extend(pratilipis)
-                print(pratilipi_published_list)
+                if not block_pratilipi_calls:
+                    pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset)
+                    pratilipi_published_list.extend(pratilipis)
 
-            if len(user_following_user_id_list) > 0:
-                pratilipi_rated_list.extend(get_recent_pratilipis_rated_by_authors(user_following_user_id_list))
-                print(pratilipi_rated_list)
-        else:
-            break
+                    if len(pratilipis) == 0:
+                        block_pratilipi_calls = True
+                        print("blocking pratilipi")
 
-        loop_count = loop_count + 1
-        offset = offset + limit
+                if not block_rated_pratilipi_calls:
+                    rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset)
+                    pratilipi_rated_list.extend(rated_pratilipi)
+
+                    if len(rated_pratilipi) == 0:
+                        block_rated_pratilipi_calls = True
+                        print("blocking rating")
+
+            loop_count = loop_count + 1
+            offset = offset + 1
 
     if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0 :
         raise FeedNotFound
@@ -515,12 +526,12 @@ def get_user_feed(user_id, offset):
     return obj_list, offset
 
 
-def get_user_following(user_id, limit, offset):
+def get_user_following(user_id, limit):
 
     try:
         conn = connectdb()
         cursor = conn.cursor()
-        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {} OFFSET {}""".format(user_id, limit, offset)
+        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}""".format(user_id, limit)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -550,13 +561,14 @@ def get_user_id_list_from_athor_ids(author_id_list):
         disconnectdb(conn)
     return user_ids
 
-def get_recent_pratilipis_published_by_authors(author_list):
+def get_recent_pratilipis_published_by_authors(author_list, time_delay):
     try:
         conn = connectdb()
         cursor = conn.cursor()
-        today = datetime.now().strftime("%Y-%m-%d")
-        yesterday = (datetime.now() + timedelta(days=-1)).strftime("%Y-%m-%d")
-        sql = """SELECT * FROM pratilipi.pratilipi WHERE author_id in {} AND state='PUBLISHED' and published_at > '{}' and published_at < '{}' """.format(tuple(author_list), yesterday, today)
+        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        time_delay = time_delay + 1
+        day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        sql = """SELECT * FROM pratilipi.pratilipi WHERE author_id in {} AND state='PUBLISHED' and published_at > '{}' and published_at < '{}' """.format(tuple(author_list), day2, day1)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -569,19 +581,20 @@ def get_recent_pratilipis_published_by_authors(author_list):
         disconnectdb(conn)
     return pratilipis
 
-def get_recent_pratilipis_rated_by_authors(user_id_list):
+def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
     try:
         conn = connectdb()
         cursor = conn.cursor()
-        today = datetime.now().strftime("%Y-%m-%d")
-        yesterday = (datetime.now() + timedelta(days=-1)).strftime("%Y-%m-%d")
+        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        time_delay = time_delay + 1
+        day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         sql = """SELECT *, r.rating AS user_rating, r.date_created AS rating_created 
                  FROM pratilipi.pratilipi p 
                  INNER JOIN (
                     SELECT rating, reference_id, date_created
                     FROM social.review 
                     WHERE user_id in {} AND rating > 3 AND state='PUBLISHED' AND reference_type='PRATILIPI' AND date_created > '{}' AND date_created < '{}')
-                 AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), yesterday, today)
+                 AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), day2, day1)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()

@@ -7,6 +7,8 @@ server {
     location /stats/v1.0/feed {
         proxy_pass http://unix:/service/service.sock;
         proxy_no_cache 1;
+        proxy_cache_valid 200 1400m;
+        proxy_cache_key $request_uri$http_user_id;
     }
     
     location / {

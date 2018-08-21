@@ -223,10 +223,13 @@ def for_user_feed(kwargs):
         response_pratilipi = _set_key(response_pratilipi, 'authorId', pratilipi.author_id)
         response_pratilipi = _set_key(response_pratilipi, 'readPageUrl', "/read?id=" + str(pratilipi.id))
         response_pratilipi = _set_key(response_pratilipi, 'writePageUrl', "/pratilipi-write/?id=" + str(pratilipi.id))
+
+        pratilipi_slug = pratilipi.slug if pratilipi.slug != '' else pratilipi.slug_en
+        response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi.slug_id))
+
         response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi.type)
         response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi.content_type)
         response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi.state)
-        response_pratilipi = _set_key(response_pratilipi, 'slug', response_pratilipi['readPageUrl'])
         response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
         response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
         response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
