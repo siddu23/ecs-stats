@@ -334,3 +334,40 @@ def get_top_authors(**kwargs):
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+
+@timeit
+@request_parser
+def get_user_feed(**kwargs):
+    """ get user feed """
+    try:
+        print(kwargs)
+        validate_user_feed_request(kwargs)
+        offset = int(kwargs['offset'][0]) if kwargs.has_key('offset') else 0
+        feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset)
+
+        # get authors related to pratilipis
+        author_ids = _join_authorids(feed_pratilipi_list)
+        authors = cognition.get_authors(author_ids)
+        author_dict = _object_to_dict(authors)
+
+        # get ratings related to pratilipis
+        pratilipi_ids = _join_pratilipiids(feed_pratilipi_list)
+        ratings = cognition.get_ratings(pratilipi_ids)
+        rating_dict = _object_to_dict(ratings)
+
+        response_kwargs = {'pratilipis': feed_pratilipi_list,
+                           'authors': author_dict,
+                           'ratings': rating_dict,
+                           'offset': offset}
+        print("making response")
+        response = response_builder.for_user_feed(response_kwargs)
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except FeedNotFound as err:
+        return bottle.HTTPResponse(status=404, body={"message": str(err)})
+    except Exception as err:
+        print(str(err))
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})

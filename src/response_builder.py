@@ -199,6 +199,52 @@ def for_author_recommendations(kwargs):
     response_dict['cursor'] = str(20 + int(cursor))
     return json.dumps(response_dict)
 
+def for_user_feed(kwargs):
+    pratilipis = kwargs['pratilipis']
+    authors = kwargs['authors']
+    ratings = kwargs['ratings']
+    response_dict = { "feedList" : []}
+    for pratilipi in pratilipis:
+        rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0
+        author = authors[pratilipi.author_id]
+        response_object = {}
+        if hasattr(pratilipi, 'user_rating'):
+            _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
+            _set_key(response_object, 'feedType', 'RATING')
+        else:
+            _set_key(response_object, 'feedType', 'PRATILIPI')
+
+        print("processing pratilipis ", pratilipi.id)
+        response_pratilipi = {}
+        response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi.id)
+        response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi.title)
+        response_pratilipi = _set_key(response_pratilipi, 'titleEn', pratilipi.title_en)
+        response_pratilipi = _set_key(response_pratilipi, 'displayTitle', pratilipi.title if pratilipi.title != '' else pratilipi.title_en)
+        response_pratilipi = _set_key(response_pratilipi, 'authorId', pratilipi.author_id)
+        response_pratilipi = _set_key(response_pratilipi, 'readPageUrl', "/read?id=" + str(pratilipi.id))
+        response_pratilipi = _set_key(response_pratilipi, 'writePageUrl', "/pratilipi-write/?id=" + str(pratilipi.id))
+        response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi.type)
+        response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi.content_type)
+        response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi.state)
+        response_pratilipi = _set_key(response_pratilipi, 'slug', response_pratilipi['readPageUrl'])
+        response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
+        response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
+        response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
+        response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
+
+        data = {}
+        data['authorId'] = author['id']
+        data['displayName'] = _author_name(author)
+        data['pageUrl'] = _author_slug_details(author)
+        data['slug'] = _author_slug_details(author)
+
+        response_pratilipi = _set_key(response_pratilipi, 'author', data)
+        response_object['pratilipi'] = response_pratilipi
+        response_dict['feedList'].append(response_object)
+        response_dict['offset'] = kwargs['offset']
+
+    return response_dict
+  
 def for_top_authors(kwargs):
     """top authors"""
     response_dict = {'authorList': []}

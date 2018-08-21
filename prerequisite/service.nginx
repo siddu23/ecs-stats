@@ -3,7 +3,12 @@ server {
 
     include proxy_params;
     add_header X-Proxy-Cache $upstream_cache_status;
-
+    
+    location /stats/v1.0/feed {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_no_cache 1;
+    }
+    
     location / {
         proxy_pass http://unix:/service/service.sock;
         proxy_cache_min_uses 1;

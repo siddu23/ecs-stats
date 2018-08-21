@@ -24,3 +24,6 @@ def app_routes(app):
 
     # /authors/recommendation
     app.route('/authors/recommendation', ['GET'], controller.get_author_recommendations)
+
+    # /stats/v1.0/feed?offset=1234567
+    app.route('/stats/v1.0/feed', ['GET'], controller.get_user_feed)
