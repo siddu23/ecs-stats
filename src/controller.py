@@ -251,14 +251,14 @@ def get_author_recommendations(**kwargs):
         authors = []
         author_ids = None
         limit = 20
-        bucket = 'A1' 
+        bucket = 'A1'
         temp = user_id % 10
 
         if offset == None or offset == "null":
             offset = 0
         else:
-            offset = int(offset) 
-        
+            offset = int(offset)
+
         if temp <= 3:
             bucket = 'A1'
         elif temp <= 6:
@@ -274,7 +274,7 @@ def get_author_recommendations(**kwargs):
             author_ids = author_recommend_two
         elif(bucket == 'A3'):
             author_ids = author_recommend_three
-   
+
         if language == "hindi":
             ids = author_ids.hindi_authors
         elif language == "bengali":
@@ -301,10 +301,10 @@ def get_author_recommendations(**kwargs):
         for _id in user_followed_authors:
             if _id in ids:
                 ids.remove(_id)
-            
+
         ids = ids[offset:(offset+limit)]
         idStr = ','.join(map(str, ids))
-            #print "Getting authors for ", idStr 
+            #print "Getting authors for ", idStr
         if(len(idStr) > 0):
             authors = cognition.get_authors(idStr)
             #print authors
@@ -315,10 +315,22 @@ def get_author_recommendations(**kwargs):
                             'bucket':bucket}
 
         response = response_builder.for_author_recommendations(response_kwargs)
- 
+
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
-        
+
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+@timeit
+@request_parser
+def get_top_authors(**kwargs):
+    """ Top authors """
+    try:
+        authors = cognition.get_top_authors()
+        response = response_builder.for_top_authors({ 'authors': authors })
+        return bottle.HTTPResponse(status=200, body=response)
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})

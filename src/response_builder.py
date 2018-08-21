@@ -68,7 +68,7 @@ def _pratilipi_details(pratilipi, author, rating, add_to_lib):
     data = {}
     data['authorId'] = pratilipi.author_id
     data['displayName'] = _author_name(author)
-    data['pageUrl'] = _author_slug_details(author) 
+    data['pageUrl'] = _author_slug_details(author)
     data['slug'] = _author_slug_details(author)
 
     response = _set_key(response, 'author', data)
@@ -101,7 +101,7 @@ def for_all(kwargs):
     for pratilipi in pratilipis:
         #add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
         add_to_lib = False
-        rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0 
+        rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0
         data = _pratilipi_details(pratilipi, authors[pratilipi.author_id], rating, add_to_lib)
         response['pratilipiList'].append(data)
     return json.dumps(response)
@@ -115,7 +115,7 @@ def for_author_dashboard(kwargs):
     response = {}
     temp = { 'readCount': kwargs['total_read_count'],
             'follower': kwargs['total_no_of_followers'],
-            'reviewCount': kwargs['total_reviews'], 
+            'reviewCount': kwargs['total_reviews'],
             'highestRating': 0 }
     response = _set_key(response, 'total', temp)
 
@@ -174,7 +174,7 @@ def for_author_dashboard(kwargs):
 
 def for_author_recommendations(kwargs):
     """author recommendations"""
-    response_dict = {'authorList': []} 
+    response_dict = {'authorList': []}
     authors = kwargs['authors']
     cursor = kwargs['cursor']
     logged_user_id = kwargs['logged_user_id']
@@ -194,7 +194,7 @@ def for_author_recommendations(kwargs):
         response_dict['authorList'].append(response)
 
     meta = {}
-    meta['algorithmId'] = bucket    
+    meta['algorithmId'] = bucket
     response_dict['meta'] = meta
     response_dict['cursor'] = str(20 + int(cursor))
     return json.dumps(response_dict)
@@ -247,3 +247,18 @@ def for_user_feed(kwargs):
         response_dict['offset'] = kwargs['offset']
 
     return response_dict
+  
+def for_top_authors(kwargs):
+    """top authors"""
+    response_dict = {'authorList': []}
+    authors = kwargs['authors']
+    for author in authors:
+        response = {}
+        response = _set_key(response, 'authorId', author.id)
+        response = _set_key(response, 'firstName', author.first_name)
+        response = _set_key(response, 'name', author.first_name)
+        response = _set_key(response, 'contentPublished', author.content_published)
+        response = _set_key(response, 'totalReadCount', author.total_read_count)
+        response_dict['authorList'].append(response)
+
+    return json.dumps(response_dict)

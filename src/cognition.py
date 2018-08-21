@@ -104,7 +104,7 @@ def get_recent_published(kwargs):
 
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
-                 WHERE a.id = c.pratilipi_id 
+                 WHERE a.id = c.pratilipi_id
                  AND b.id = c.category_id
                  AND a.state = 'PUBLISHED'
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -118,10 +118,10 @@ def get_recent_published(kwargs):
         total_pratilipis = record_count.get('cnt', 0)
         if total_pratilipis == 0: raise PratilipiNotFound
 
-        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count, 
+        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count,
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
-                 WHERE a.id = c.pratilipi_id 
+                 WHERE a.id = c.pratilipi_id
                  AND b.id = c.category_id
                  AND a.state = 'PUBLISHED'
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -158,7 +158,7 @@ def get_read_time(kwargs):
 
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
-                 WHERE a.id = c.pratilipi_id 
+                 WHERE a.id = c.pratilipi_id
                  AND b.id = c.category_id
                  AND a.state = 'PUBLISHED'
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -172,12 +172,12 @@ def get_read_time(kwargs):
         total_pratilipis = record_count.get('cnt', 0)
         if total_pratilipis == 0: raise PratilipiNotFound
 
-        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count, 
+        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count,
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at,
                  d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
                  d.firstname_lastname, d.firstnameen_lastnameen, d.slug as author_slug
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c, author.author d
-                 WHERE a.id = c.pratilipi_id 
+                 WHERE a.id = c.pratilipi_id
                  AND b.id = c.category_id
                  AND a.author_id = d.id
                  AND a.state = 'PUBLISHED'
@@ -220,7 +220,7 @@ def get_high_rated(kwargs):
                        AND d.state = 'PUBLISHED'
                        AND d.reference_id IN (SELECT a.id
                                               FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
-                                              WHERE a.id = c.pratilipi_id 
+                                              WHERE a.id = c.pratilipi_id
                                               AND b.id = c.category_id
                                               AND a.state = 'PUBLISHED'
                                               AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -243,7 +243,7 @@ def get_high_rated(kwargs):
                  AND d.state = 'PUBLISHED'
                  AND d.reference_id IN (SELECT a.id
                                                FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
-                                               WHERE a.id = c.pratilipi_id 
+                                               WHERE a.id = c.pratilipi_id
                                                AND b.id = c.category_id
                                                AND a.state = 'PUBLISHED'
                                                AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -266,7 +266,7 @@ def get_high_rated(kwargs):
             rating_dict[i['pratilipi_id']] = {'avg_rating': i['avg_rating']}
         pratilipi_ids = ','.join(rating_dict.keys())
 
-        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count, 
+        sql = """SELECT a.id, a.author_id, a.content_type, a.cover_image, a.language, a.type, a.read_count_offset + a.read_count as read_count,
                  a.title, a.title_en, a.slug, a.slug_en, a.slug_id, a.reading_time, a.updated_at
                  FROM pratilipi.pratilipi a
                  WHERE a.id IN ({})""".format(pratilipi_ids)
@@ -324,14 +324,14 @@ def get_author_dashboard(kwargs):
 
         # total followers
         sql = """SELECT COUNT(*) AS no_of_followers
-                 FROM follow.follow 
+                 FROM follow.follow
                  WHERE reference_type = "AUTHOR"
                  AND reference_id = '{}'
                  AND state = "FOLLOWING" """.format(author_id)
         cursor.execute(sql)
         recordset = cursor.fetchone()
         total_no_of_followers = recordset.get('no_of_followers', 0)
-        
+
         # todays content published
         sql = """SELECT COUNT(*) as content_published
                  FROM pratilipi.pratilipi
@@ -345,7 +345,7 @@ def get_author_dashboard(kwargs):
 
         # new followers
         sql = """SELECT COUNT(*) AS no_of_followers
-                 FROM follow.follow 
+                 FROM follow.follow
                  WHERE reference_type = "AUTHOR"
                  AND reference_id = '{}'
                  AND state = "FOLLOWING"
@@ -357,8 +357,8 @@ def get_author_dashboard(kwargs):
         # new rating
         sql = """SELECT COUNT(*) as no_of_rating
                  FROM social.review
-                 WHERE reference_type = "PRATILIPI" 
-                 AND state = 'PUBLISHED' 
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = 'PUBLISHED'
                  AND reference_id IN ({})
                  AND date_updated >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(pratilipiids)
         cursor.execute(sql)
@@ -390,13 +390,13 @@ def get_author_dashboard(kwargs):
 
         # highest engaged
         sql = """SELECT CAST(reference_id AS SIGNED) as id, COUNT(*) as no_of_reviews
-                 FROM social.review 
+                 FROM social.review
                  WHERE reference_type = "PRATILIPI"
                  AND state = "PUBLISHED"
                  AND review != ""
                  AND reference_id IN ({})
                  GROUP BY 1
-                 ORDER BY 2 DESC 
+                 ORDER BY 2 DESC
                  LIMIT 3""".format(pratilipiids)
         cursor.execute(sql)
         highest_engaged = cursor.fetchall()
@@ -412,11 +412,11 @@ def get_author_dashboard(kwargs):
         cursor.execute(sql)
         pratilipis_review = cursor.fetchall()
 
-        # get no_of_followers 
+        # get no_of_followers
         sql = """SELECT CAST(reference_id AS SIGNED) as id, ROUND(AVG(rating), 2) as avg_rating
                  FROM social.review
-                 WHERE reference_type = "PRATILIPI" 
-                 AND state = 'PUBLISHED' 
+                 WHERE reference_type = "PRATILIPI"
+                 AND state = 'PUBLISHED'
                  AND reference_id IN ({})
                  GROUP BY 1""".format(pratilipiids)
         cursor.execute(sql)
@@ -606,3 +606,42 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
     finally:
         disconnectdb(conn)
     return pratilipis
+
+def get_top_authors():
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        sql = """SELECT author.first_name, author.first_name_en, author.last_name, author.last_name_en, author.pen_name, author.pen_name_en,
+                 author.firstname_lastname, author.firstnameen_lastnameen, author.slug, author.profile_image,
+                 author.content_published, author.total_read_count,
+                 a.author_id, a.avg_read, SUM(b.average_rating)/COUNT(b.pratilipi_id), SUM(b.rating_count) as total_rating,
+                ((b.rating_count / a.avg_read * 100 ) / 2)  + (SUM(b.average_rating)/COUNT(b.pratilipi_id) * 10) AS rating_score
+                FROM
+                    author.author AS author,
+                	(SELECT author_id, read_count, id, SUM(read_count) / COUNT(DISTINCT id) AS avg_read
+                		FROM pratilipi.pratilipi
+                		WHERE state = "PUBLISHED" AND published_at > "2018-08-14 00:00:00" AND language = "BENGALI" GROUP BY author_id) AS a,
+                	(SELECT SUM(a.rating)/COUNT(a.user_id) AS average_rating, COUNT(a.user_id) AS rating_count, a.reference_id AS pratilipi_id, b.author_id
+                		FROM social.review AS a,
+                	(SELECT id, author_id
+                		FROM pratilipi.pratilipi
+                        WHERE state = "PUBLISHED" AND published_at > "2018-08-14 00:00:00" AND language = "BENGALI")
+                        AS b
+                			WHERE a.reference_id = b.id GROUP BY a.reference_id) AS b
+                WHERE a.author_id = b.author_id AND a.avg_read > 100 AND a.author_id = author.id
+                GROUP BY a.author_id
+                HAVING SUM(b.rating_count) > 50
+                ORDER BY rating_score DESC LIMIT 20;"""
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    obj_list = [ Author() for i in range(len(record_set)) ]
+    for indx, row in enumerate(record_set):
+        for name in row:
+            setattr(obj_list[indx], name, row[name])
+    return obj_list
+
