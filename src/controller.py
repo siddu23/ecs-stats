@@ -348,7 +348,7 @@ def get_user_feed(**kwargs):
                            'authors': author_dict,
                            'ratings': rating_dict,
                            'offset': offset}
-
+        print("making response")
         response = response_builder.for_user_feed(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)

@@ -214,6 +214,7 @@ def for_user_feed(kwargs):
         else:
             _set_key(response_object, 'feedType', 'PRATILIPI')
 
+        print("processing pratilipis ", pratilipi.id)
         response_pratilipi = {}
         response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi.id)
         response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi.title)
