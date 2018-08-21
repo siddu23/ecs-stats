@@ -359,3 +359,55 @@ def get_user_feed(**kwargs):
     except Exception as err:
         print(str(err))
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+
+@timeit
+@request_parser
+def get_most_active_authors(**kwargs):
+    """ get most active authors """
+    try:
+        # query param
+        language = kwargs['language'][0].lower() if 'language' in kwargs else None
+        offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
+        user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+
+        all_ids = []
+
+        if language is not None:
+            while (len(all_ids) < 20):
+                ids = cognition.get_most_active_authors_list(language, 7, offset)
+
+                if len(ids) == 0:
+                    break
+                all_ids.extend(ids)
+                user_followed_authors = cognition.get_user_followed_authorIds(user_id)
+                offset = offset + len(ids)
+                for _id in user_followed_authors:
+                    if _id in all_ids:
+                        all_ids.remove(_id)
+        else:
+            return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
+
+        ids = all_ids[0:20]
+
+        idStr = ','.join(map(str, ids))
+        authors = []
+        if (len(idStr) > 0):
+            authors = cognition.get_authors(idStr)
+            # print authors
+
+        response_kwargs = {
+            'authors': authors,
+            'cursor': offset,
+            'logged_user_id': user_id,
+        }
+
+        response = response_builder.for_author_recommendations(response_kwargs)
+
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
+
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+

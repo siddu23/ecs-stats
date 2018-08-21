@@ -606,3 +606,28 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
     finally:
         disconnectdb(conn)
     return pratilipis
+
+def get_most_active_authors_list(language, time_delay, offset):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        day2 = (datetime.now()).strftime("%Y-%m-%d")
+        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+
+        sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi 
+            where language='{}' AND state='PUBLISHED' AND published_at > '{}' AND published_at < '{}' 
+            group by author_id order by rank desc limit 20 offset {}""".format(language, day1, day2, offset)
+
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        author_ids = []
+        for i in record_set:
+            author_ids.append(i['author_id'])
+
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return author_ids
