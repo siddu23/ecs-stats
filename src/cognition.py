@@ -500,7 +500,7 @@ def get_user_feed(user_id, offset):
             break
 
         loop_count = loop_count + 1
-        offset = offset + loop_count * limit
+        offset = offset + limit
 
     if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0 :
         raise FeedNotFound
