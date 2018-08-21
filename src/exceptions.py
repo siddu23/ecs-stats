@@ -36,6 +36,12 @@ class PratilipiNotFound(Exception):
     def __str__(self):
         return str(self.message)
 
+class FeedNotFound(Exception):
+    def __init__(self):
+        self.message = 'no feed entries found'
+    def __str__(self):
+        return str(self.message)
+
 class LanguageRequired(Exception):
     def __init__(self):
         self.message = 'language is mandatory'
@@ -57,6 +63,12 @@ class ToSecRequired(Exception):
 class AuthorIdRequired(Exception):
     def __init__(self):
         self.message = 'author id is mandatory'
+    def __str__(self):
+        return str(self.message)
+
+class UserIdRequired(Exception):
+    def __init__(self):
+        self.message = 'user id is mandatory'
     def __str__(self):
         return str(self.message)
 

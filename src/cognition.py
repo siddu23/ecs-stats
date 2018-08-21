@@ -468,4 +468,128 @@ def get_user_followed_authorIds(user_id):
         raise DbSelectError(err)
     finally:
         disconnectdb(conn)
-    return author_ids 
+    return author_ids
+
+def get_user_feed(user_id, offset):
+    limit = 100
+    loop_count = 0
+
+    user_following_author_list = []
+    pratilipi_published_list = []
+    pratilipi_rated_list = []
+
+    while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
+        print("loop count is ", loop_count)
+        user_following_author_list = get_user_following(user_id, limit, offset)
+        print(user_following_author_list)
+
+        if len(user_following_author_list) > 0:
+            user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list)
+            print(user_following_user_id_list)
+
+            pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list)
+
+            if len(pratilipis) > 0:
+                pratilipi_published_list.extend(pratilipis)
+                print(pratilipi_published_list)
+
+            if len(user_following_user_id_list) > 0:
+                pratilipi_rated_list.extend(get_recent_pratilipis_rated_by_authors(user_following_user_id_list))
+                print(pratilipi_rated_list)
+        else:
+            break
+
+        loop_count = loop_count + 1
+        offset = offset + loop_count * limit
+
+    if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0 :
+        raise FeedNotFound
+
+    pratilipi_published_list.extend(pratilipi_rated_list)
+
+    obj_list = [Pratilipi() for i in range(len(pratilipi_published_list))]
+    for indx, row in enumerate(pratilipi_published_list):
+        for name in row:
+            setattr(obj_list[indx], name, row[name])
+
+    return obj_list, offset
+
+
+def get_user_following(user_id, limit, offset):
+
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {} OFFSET {}""".format(user_id, limit, offset)
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        author_ids = []
+        for i in record_set:
+            author_ids.append(int(i['reference_id']))
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return author_ids
+
+def get_user_id_list_from_athor_ids(author_id_list):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        sql = """SELECT user_id FROM author.author WHERE id in {} """.format(tuple(author_id_list))
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        user_ids = []
+        for i in record_set:
+            user_ids.append(int(i['user_id']))
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return user_ids
+
+def get_recent_pratilipis_published_by_authors(author_list):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() + timedelta(days=-1)).strftime("%Y-%m-%d")
+        sql = """SELECT * FROM pratilipi.pratilipi WHERE author_id in {} AND state='PUBLISHED' and published_at > '{}' and published_at < '{}' """.format(tuple(author_list), yesterday, today)
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        pratilipis = []
+        for i in record_set:
+            pratilipis.append(i)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return pratilipis
+
+def get_recent_pratilipis_rated_by_authors(user_id_list):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+        today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() + timedelta(days=-1)).strftime("%Y-%m-%d")
+        sql = """SELECT *, r.rating AS user_rating, r.date_created AS rating_created 
+                 FROM pratilipi.pratilipi p 
+                 INNER JOIN (
+                    SELECT rating, reference_id, date_created
+                    FROM social.review 
+                    WHERE user_id in {} AND rating > 3 AND state='PUBLISHED' AND reference_type='PRATILIPI' AND date_created > '{}' AND date_created < '{}')
+                 AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), yesterday, today)
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        pratilipis = []
+        for i in record_set:
+            pratilipis.append(i)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return pratilipis

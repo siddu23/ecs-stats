@@ -25,3 +25,10 @@ def validate_read_time_request(req):
 def validate_author_dashboard_request(req):
     if req['author_id'] is None:
         raise AuthorIdRequired
+
+def validate_user_feed_request(req):
+    if req['logged_user_id'] is None:
+        raise UserIdRequired
+    elif not req['logged_user_id'] > 0:
+        raise UserIdRequired
+

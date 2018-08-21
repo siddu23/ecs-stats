@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 PRATILIPI_INT_ATTR = ['id', 'author_id', 'page_count', 'read_count', 'reading_time', 'event_id']
