@@ -94,8 +94,15 @@
 #### response:
 ```
 {
-    "no_of_books_read": 1,
     "read_word_count": 1200
+}
+{
+    "read_word_count": 1200,
+    "no_of_books_read": 1
+}
+{
+    "read_word_count": 1200,
+    "tier": "1%"
 }
 ```
 ---
