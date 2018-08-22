@@ -684,14 +684,19 @@ def get_reader_score(kwargs):
                  AND property = 'READ_WORD_COUNT'""".format(kwargs['user_id'])
         cursor.execute(sql)
         word_count = cursor.fetchone()
-        word_count = word_count.get('word_cnt', 0)
+        word_count = word_count.get('word_count', 0)
     except Exception as err:
         raise DbSelectError(err)
     finally:
         disconnectdb(conn)
 
+    if word_count == 0 or word_count is None:
+        return 0, None, None
+
+    word_count = int(word_count)
+
     no_words_for_one_book = 20000
-    no_of_books_read = 0
+    no_of_books_read = None
 
     if word_count > 4096000:
         no_of_books_read = word_count/no_words_for_one_book
@@ -710,14 +715,14 @@ def get_reader_score(kwargs):
     elif word_count > 28000:
         no_of_books_read = word_count/no_words_for_one_book
 
-    tier = ""
-    if word_count >= 512 and word_count <= 1024000:
+    tier = None
+    if word_count >= 512000 and word_count <= 1024000:
         # top 10%
         tier = "10%"
     elif word_count >= 1025000 and word_count <= 2048000:
         # top 5%
         tier = "5%"
-    elif word_count >= 2049000 and word_count <= 4096000:
+    elif word_count >= 2049000:
         # top 1%
         tier = "1%"
 
