@@ -89,4 +89,13 @@
 }
 ```
 ---
-
+#### url: /stats/v1.0/reader_score?userid=12323
+#### method: GET
+#### response:
+```
+{
+    "no_of_books_read": 1,
+    "read_word_count": 1200
+}
+```
+---
