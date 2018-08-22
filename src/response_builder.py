@@ -176,9 +176,12 @@ def for_author_recommendations(kwargs):
     """author recommendations"""
     response_dict = {'authorList': []}
     authors = kwargs['authors']
-    cursor = kwargs['cursor']
-    logged_user_id = kwargs['logged_user_id']
     bucket = None
+    cursor = None
+    logged_user_id = kwargs['logged_user_id']
+
+    if kwargs.has_key('cursor'):
+        cursor = kwargs['cursor']
     if kwargs.has_key('bucket'):
         bucket = kwargs['bucket']
 
@@ -197,11 +200,13 @@ def for_author_recommendations(kwargs):
         response_dict['authorList'].append(response)
 
     meta = {}
+
     if bucket is not None:
         meta['algorithmId'] = bucket
+    if cursor is not None:
+        response_dict['cursor'] = str(20 + int(cursor))
 
     response_dict['meta'] = meta
-    response_dict['cursor'] = str(20 + int(cursor))
     return json.dumps(response_dict)
 
 def for_user_feed(kwargs):
