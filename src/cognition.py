@@ -494,29 +494,26 @@ def get_user_feed(user_id, offset):
                 pratilipis = []
                 rated_pratilipi = []
 
-                if not block_pratilipi_calls:
-                    pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset)
-                    pratilipi_published_list.extend(pratilipis)
+                pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset)
+                pratilipi_published_list.extend(pratilipis)
 
-                    if len(pratilipis) == 0:
-                        block_pratilipi_calls = True
-                        print("blocking pratilipi")
+                if len(pratilipis) == 0:
+                    block_pratilipi_calls = True
 
-                if not block_rated_pratilipi_calls:
-                    rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset)
-                    pratilipi_rated_list.extend(rated_pratilipi)
+                rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset)
+                pratilipi_rated_list.extend(rated_pratilipi)
 
-                    if len(rated_pratilipi) == 0:
-                        block_rated_pratilipi_calls = True
-                        print("blocking rating")
+                if len(rated_pratilipi) == 0:
+                    block_rated_pratilipi_calls = True
 
             loop_count = loop_count + 1
             offset = offset + 1
 
-    if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0 :
+    if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0:
         raise FeedNotFound
 
     pratilipi_published_list.extend(pratilipi_rated_list)
+    pratilipi_published_list = pratilipi_published_list[:30]
 
     obj_list = [Pratilipi() for i in range(len(pratilipi_published_list))]
     for indx, row in enumerate(pratilipi_published_list):

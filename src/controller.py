@@ -360,7 +360,6 @@ def get_user_feed(**kwargs):
                            'authors': author_dict,
                            'ratings': rating_dict,
                            'offset': offset}
-        print("making response")
         response = response_builder.for_user_feed(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
@@ -386,17 +385,18 @@ def get_most_active_authors(**kwargs):
         all_ids = []
 
         if language is not None:
-            while (len(all_ids) < 20):
+            while (len(all_ids) < 10):
                 ids = cognition.get_most_active_authors_list(language, 7, offset)
 
                 if len(ids) == 0:
                     break
+
                 all_ids.extend(ids)
                 user_followed_authors = cognition.get_user_followed_authorIds(user_id)
                 offset = offset + len(ids)
                 for _id in user_followed_authors:
-                    if _id in all_ids:
-                        all_ids.remove(_id)
+                    if int(_id) in all_ids:
+                        del all_ids[all_ids.index(int(_id))]
         else:
             return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
 
@@ -410,7 +410,6 @@ def get_most_active_authors(**kwargs):
 
         response_kwargs = {
             'authors': authors,
-            'cursor': offset,
             'logged_user_id': user_id,
         }
 
