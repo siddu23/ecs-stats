@@ -273,5 +273,6 @@ def for_reader_score(kwargs):
     response = {}
     response = _set_key(response, 'read_word_count', kwargs['read_word_count'])
     response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
+    response = _set_key(response, 'tier', kwargs['tier'])
     return json.dumps(response)
 
