@@ -214,10 +214,12 @@ def for_user_feed(kwargs):
         author = authors[pratilipi.author_id]
         response_object = {}
         if hasattr(pratilipi, 'user_rating'):
-            _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
-            _set_key(response_object, 'feedType', 'RATING')
+            response_object = _set_key(response_object, 'ratingCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
+            response_object = _set_key(response_object, 'feedType', 'RATING')
         else:
-            _set_key(response_object, 'feedType', 'PRATILIPI')
+            response_object = _set_key(response_object, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedType', 'PUBLISH')
 
         print("processing pratilipis ", pratilipi.id)
         response_pratilipi = {}
@@ -237,6 +239,7 @@ def for_user_feed(kwargs):
         response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi.state)
         response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
         response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
+        response_pratilipi = _set_key(response_pratilipi, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
         response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
         response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
 
@@ -249,6 +252,12 @@ def for_user_feed(kwargs):
         response_pratilipi = _set_key(response_pratilipi, 'author', data)
         response_object['pratilipi'] = response_pratilipi
         response_dict['feedList'].append(response_object)
+
+        if kwargs['offset'] < 30 :
+            response_dict['finished'] = False
+        else:
+            response_dict['finished'] = True
+
         response_dict['offset'] = kwargs['offset']
 
     return response_dict
