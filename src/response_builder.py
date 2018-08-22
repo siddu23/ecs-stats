@@ -267,3 +267,11 @@ def for_top_authors(kwargs):
         response_dict['authorList'].append(response)
 
     return json.dumps(response_dict)
+
+def for_reader_score(kwargs):
+    """reader score response"""
+    response = {}
+    response = _set_key(response, 'read_word_count', kwargs['read_word_count'])
+    response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
+    return json.dumps(response)
+

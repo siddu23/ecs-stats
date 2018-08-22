@@ -671,3 +671,26 @@ def get_most_active_authors_list(language, time_delay, offset):
     finally:
         disconnectdb(conn)
     return author_ids
+
+def get_reader_score(kwargs):
+    """get reader score"""
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql = """SELECT SUM(property_value) as word_count
+                 FROM user_pratilipi.user_pratilipi
+                 WHERE user_id = {}
+                 AND property = 'READ_WORD_COUNT'""".format(kwargs['user_id'])
+        cursor.execute(sql)
+        word_count = cursor.fetchone()
+        word_count = word_count.get('word_cnt', 0)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    no_words_for_one_book = 25000
+    no_of_books_read = word_count/no_words_for_one_book
+    return word_count, no_of_books_read
+

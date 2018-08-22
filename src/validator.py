@@ -32,3 +32,6 @@ def validate_user_feed_request(req):
     elif not req['logged_user_id'] > 0:
         raise UserIdRequired
 
+def validate_reader_score_request(req):
+    if req['user_id'] is None:
+        raise UserIdRequired

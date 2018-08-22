@@ -15,6 +15,39 @@ server {
         proxy_no_cache 1;
     }
     
+    location /stats/v1.0/recent_published {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 1200m;
+        proxy_cache_key $request_uri;
+    }
+
+    location /stats/v1.0/high_rated {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 1200m;
+        proxy_cache_key $request_uri;
+    }
+
+    location /stats/v1.0/read_time {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 1200m;
+        proxy_cache_key $request_uri;
+    }
+
+    location /stats/v1.0/author_dashboard {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 1200m;
+        proxy_cache_key $request_uri;
+    }
+
+    location /stats/v1.0/reader_score {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_no_cache 1;
+    }
+
     location / {
         proxy_pass http://unix:/service/service.sock;
         proxy_cache_min_uses 1;

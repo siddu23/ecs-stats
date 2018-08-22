@@ -423,3 +423,25 @@ def get_most_active_authors(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
+def get_reader_score(**kwargs):
+    """get reader score"""
+    try:
+        # query param
+        kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
+
+        validate_reader_score_request(kwargs)
+        word_count, no_of_books_read = cognition.get_reader_score(kwargs)
+
+        kwargs['read_word_count'] = word_count
+        kwargs['no_of_books_read'] = no_of_books_read
+        response = response_builder.for_reader_score(kwargs)
+
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
