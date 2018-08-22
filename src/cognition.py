@@ -690,7 +690,35 @@ def get_reader_score(kwargs):
     finally:
         disconnectdb(conn)
 
-    no_words_for_one_book = 25000
-    no_of_books_read = word_count/no_words_for_one_book
-    return word_count, no_of_books_read
+    no_words_for_one_book = 20000
+    no_of_books_read = 0
 
+    if word_count > 4096000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 2048000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 1024000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 512000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 256000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 112000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 56000:
+        no_of_books_read = word_count/no_words_for_one_book
+    elif word_count > 28000:
+        no_of_books_read = word_count/no_words_for_one_book
+
+    tier = ""
+    if word_count >= 512 and word_count <= 1024000:
+        # top 10%
+        tier = "10%"
+    elif word_count >= 1025000 and word_count <= 2048000:
+        # top 5%
+        tier = "5%"
+    elif word_count >= 2049000 and word_count <= 4096000:
+        # top 1%
+        tier = "1%"
+
+    return word_count, no_of_books_read, tier
