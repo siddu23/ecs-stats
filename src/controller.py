@@ -432,10 +432,11 @@ def get_reader_score(**kwargs):
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
 
         validate_reader_score_request(kwargs)
-        word_count, no_of_books_read = cognition.get_reader_score(kwargs)
+        word_count, no_of_books_read, tier = cognition.get_reader_score(kwargs)
 
         kwargs['read_word_count'] = word_count
         kwargs['no_of_books_read'] = no_of_books_read
+        kwargs['tier'] = tier
         response = response_builder.for_reader_score(kwargs)
 
         sys.stdout.flush()
