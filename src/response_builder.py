@@ -276,12 +276,16 @@ def for_top_authors(kwargs):
     response_dict = {'authorList': []}
     authors = kwargs['authors']
     for author in authors:
+        print(author)
         response = {}
         response = _set_key(response, 'authorId', author.id)
         response = _set_key(response, 'firstName', author.first_name)
         response = _set_key(response, 'name', author.first_name)
         response = _set_key(response, 'contentPublished', author.content_published)
         response = _set_key(response, 'totalReadCount', author.total_read_count)
+        response = _set_key(response, 'displayName', _author_name(author))
+        response = _set_key(response, 'pageUrl', _author_slug_details(author))
+        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['id'], author['profile_image'], 'image'))
         response_dict['authorList'].append(response)
 
     return json.dumps(response_dict)
@@ -293,4 +297,3 @@ def for_reader_score(kwargs):
     if kwargs['no_of_books_read'] is not None: response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
     if kwargs['tier'] is not None: response = _set_key(response, 'tier', kwargs['tier'])
     return json.dumps(response)
-
