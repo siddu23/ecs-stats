@@ -253,6 +253,9 @@ def for_user_feed(kwargs):
         data['authorId'] = author['id']
         data['displayName'] = _author_name(author)
         data['pageUrl'] = _author_slug_details(author)
+        data['contentPublished'] = author['content_published']
+        data['totalReadCount'] = author['total_read_count']
+        data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
         data['slug'] = _author_slug_details(author)
 
         response_pratilipi = _set_key(response_pratilipi, 'author', data)
