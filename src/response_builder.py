@@ -219,11 +219,11 @@ def for_user_feed(kwargs):
         author = authors[pratilipi.author_id]
         response_object = {}
         if hasattr(pratilipi, 'user_rating'):
-            response_object = _set_key(response_object, 'ratingCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
             response_object = _set_key(response_object, 'feedType', 'RATING')
         else:
-            response_object = _set_key(response_object, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.updated_at.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'feedType', 'PUBLISH')
 
         print("processing pratilipis ", pratilipi.id)
