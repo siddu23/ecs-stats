@@ -585,11 +585,11 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
         day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT *, r.rating AS user_rating, r.date_created AS rating_created 
-                 FROM pratilipi.pratilipi p 
+        sql = """SELECT *, r.rating AS user_rating, r.date_created AS rating_created
+                 FROM pratilipi.pratilipi p
                  INNER JOIN (
                     SELECT rating, reference_id, date_created
-                    FROM social.review 
+                    FROM social.review
                     WHERE user_id in {} AND rating > 3 AND state='PUBLISHED' AND reference_type='PRATILIPI' AND date_created > '{}' AND date_created < '{}')
                  AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), day2, day1)
         print(sql)
@@ -611,11 +611,14 @@ def get_top_authors():
         sql = """SELECT author.first_name, author.first_name_en, author.last_name, author.last_name_en, author.pen_name, author.pen_name_en,
                  author.firstname_lastname, author.firstnameen_lastnameen, author.slug, author.profile_image,
                  author.content_published, author.total_read_count,
-                 a.author_id, a.avg_read, SUM(b.average_rating)/COUNT(b.pratilipi_id), SUM(b.rating_count) as total_rating,
-                ((b.rating_count / a.avg_read * 100 ) / 2)  + (SUM(b.average_rating)/COUNT(b.pratilipi_id) * 10) AS rating_score
+                 a.author_id, a.avg_read,
+                 SUM(b.average_rating)/COUNT(b.pratilipi_id),
+                 SUM(b.rating_count) as total_rating,
+                 a.total_read,
+                a.total_read * SUM(b.average_rating)/COUNT(b.pratilipi_id)  AS rating_score
                 FROM
                     author.author AS author,
-                	(SELECT author_id, read_count, id, SUM(read_count) / COUNT(DISTINCT id) AS avg_read
+                	(SELECT author_id, read_count, id, SUM(read_count) / COUNT(DISTINCT id) AS avg_read, SUM(read_count) AS total_read
                 		FROM pratilipi.pratilipi
                 		WHERE state = "PUBLISHED" AND published_at > "2018-08-14 00:00:00" AND language = "BENGALI" GROUP BY author_id) AS a,
                 	(SELECT SUM(a.rating)/COUNT(a.user_id) AS average_rating, COUNT(a.user_id) AS rating_count, a.reference_id AS pratilipi_id, b.author_id
@@ -625,9 +628,9 @@ def get_top_authors():
                         WHERE state = "PUBLISHED" AND published_at > "2018-08-14 00:00:00" AND language = "BENGALI")
                         AS b
                 			WHERE a.reference_id = b.id GROUP BY a.reference_id) AS b
-                WHERE a.author_id = b.author_id AND a.avg_read > 100 AND a.author_id = author.id
+                WHERE a.author_id = b.author_id AND a.total_read > 1000 AND a.author_id = author.id
                 GROUP BY a.author_id
-                HAVING SUM(b.rating_count) > 50
+                HAVING SUM(b.rating_count) > 5
                 ORDER BY rating_score DESC LIMIT 20;"""
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -652,8 +655,8 @@ def get_most_active_authors_list(language, time_delay, offset):
         day2 = (datetime.now()).strftime("%Y-%m-%d")
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
 
-        sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi 
-            where language='{}' AND state='PUBLISHED' AND published_at > '{}' AND published_at < '{}' 
+        sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi
+            where language='{}' AND state='PUBLISHED' AND published_at > '{}' AND published_at < '{}'
             group by author_id order by rank desc limit 20 offset {}""".format(language, day1, day2, offset)
 
         print(sql)
