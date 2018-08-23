@@ -35,3 +35,10 @@ def validate_user_feed_request(req):
 def validate_reader_score_request(req):
     if req['user_id'] is None:
         raise UserIdRequired
+
+def validate_top_authors_request(req):
+    if req['language'] is None:
+        raise LanguageRequired
+
+    if req['language'].lower() not in LANGUAGE:
+        raise LanguageInvalid

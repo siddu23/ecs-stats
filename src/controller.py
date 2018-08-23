@@ -328,9 +328,20 @@ def get_author_recommendations(**kwargs):
 def get_top_authors(**kwargs):
     """ Top authors """
     try:
-        authors = cognition.get_top_authors()
+        # query param
+        kwargs = transform_request(kwargs)
+
+        # validate request
+        validate_request(kwargs)
+        language = kwargs['language'].upper()
+
+        authors = cognition.get_top_authors(language)
         response = response_builder.for_top_authors({ 'authors': authors })
         return bottle.HTTPResponse(status=200, body=response)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except LanguageInvalid as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
