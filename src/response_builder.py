@@ -219,11 +219,11 @@ def for_user_feed(kwargs):
         author = authors[pratilipi.author_id]
         response_object = {}
         if hasattr(pratilipi, 'user_rating'):
-            response_object = _set_key(response_object, 'ratingCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
             response_object = _set_key(response_object, 'feedType', 'RATING')
         else:
-            response_object = _set_key(response_object, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.updated_at.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'feedType', 'PUBLISH')
 
         print("processing pratilipis ", pratilipi.id)
@@ -241,6 +241,7 @@ def for_user_feed(kwargs):
 
         response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi.type)
         response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi.content_type)
+        response_pratilipi = _set_key(response_pratilipi, 'summary', pratilipi.summary if pratilipi.summary is not None else "")
         response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi.state)
         response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
         response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
@@ -252,6 +253,9 @@ def for_user_feed(kwargs):
         data['authorId'] = author['id']
         data['displayName'] = _author_name(author)
         data['pageUrl'] = _author_slug_details(author)
+        data['contentPublished'] = author['content_published']
+        data['totalReadCount'] = author['total_read_count']
+        data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
         data['slug'] = _author_slug_details(author)
 
         response_pratilipi = _set_key(response_pratilipi, 'author', data)
