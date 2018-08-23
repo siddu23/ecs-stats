@@ -332,7 +332,7 @@ def get_top_authors(**kwargs):
         kwargs = transform_request(kwargs)
 
         # validate request
-        validate_request(kwargs)
+        validate_top_authors_request(kwargs)
         language = kwargs['language'].upper()
 
         authors = cognition.get_top_authors(language)
