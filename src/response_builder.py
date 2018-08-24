@@ -246,6 +246,7 @@ def for_user_feed(kwargs):
         response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
         response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
         response_pratilipi = _set_key(response_pratilipi, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
+        response_pratilipi = _set_key(response_pratilipi, 'listingDateMillis', int(pratilipi.created_at.strftime("%s")) * 1000)
         response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
         response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
 
