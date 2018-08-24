@@ -285,7 +285,7 @@ def for_top_authors(kwargs):
         response = _set_key(response, 'totalReadCount', author.total_read_count)
         response = _set_key(response, 'displayName', _author_name(author))
         response = _set_key(response, 'pageUrl', _author_slug_details(author))
-        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['id'], author['profile_image'], 'image'))
+        # response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['id'], author['profile_image'], 'image'))
         response_dict['authorList'].append(response)
 
     return json.dumps(response_dict)
