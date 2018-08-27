@@ -638,6 +638,7 @@ def get_top_authors(language):
                    GROUP BY a.author_id
                    HAVING SUM(b.rating_count) /COUNT(b.pratilipi_id) > 20
                    ORDER BY average_rate DESC LIMIT 20;""".format(startday, language, startday, language)
+        print(sql);
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
