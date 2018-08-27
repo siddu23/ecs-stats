@@ -277,7 +277,6 @@ def for_top_authors(kwargs):
     response_dict = {'authorList': []}
     authors = kwargs['authors']
     for author in authors:
-        print(author)
         response = {}
         response = _set_key(response, 'authorId', author.author_id)
         response = _set_key(response, 'firstName', author.first_name)
