@@ -645,10 +645,9 @@ def get_top_authors(language):
     finally:
         disconnectdb(conn)
 
-    obj_list = [ Author() for i in range(len(record_set)) ]
-    for indx, row in enumerate(record_set):
-        for name in row:
-            setattr(obj_list[indx], name, row[name])
+    obj_list = [ ]
+    for i in record_set:
+        obj_list.append(i)
     return obj_list
 
 
