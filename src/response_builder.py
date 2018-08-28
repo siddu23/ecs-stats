@@ -281,16 +281,18 @@ def for_top_authors(kwargs):
     response_dict = {'authorList': []}
     authors = kwargs['authors']
     for author in authors:
-        print(author)
         response = {}
-        response = _set_key(response, 'authorId', author.id)
-        response = _set_key(response, 'firstName', author.first_name)
-        response = _set_key(response, 'name', author.first_name)
-        response = _set_key(response, 'contentPublished', author.content_published)
-        response = _set_key(response, 'totalReadCount', author.total_read_count)
+        response = _set_key(response, 'authorId', author['author_id'])
+        response = _set_key(response, 'firstName', author['first_name'])
+        response = _set_key(response, 'name', author['first_name'])
+        response = _set_key(response, 'averageRate', "{0:.2f}".format(int(author['average_rate'])))
+        response = _set_key(response, 'averageRatingCount', int(author['average_rating_count']))
+        response = _set_key(response, 'readCount', int(author['total_read']))
         response = _set_key(response, 'displayName', _author_name(author))
-        response = _set_key(response, 'pageUrl', _author_slug_details(author))
-        # response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['id'], author['profile_image'], 'image'))
+        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['author_id'], author['profile_image'], 'image'))
+        # response = _set_key(response, 'contentPublished', author.content_published)
+        # response = _set_key(response, 'totalReadCount', author.total_read_count)
+        # response = _set_key(response, 'pageUrl', _author_slug_details(author))
         response_dict['authorList'].append(response)
 
     return json.dumps(response_dict)

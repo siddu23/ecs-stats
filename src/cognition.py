@@ -625,12 +625,12 @@ def get_top_authors(language):
         sql = """SELECT author.first_name, author.first_name_en, author.last_name, author.last_name_en, author.pen_name, author.pen_name_en,
                 author.firstname_lastname, author.firstnameen_lastnameen, author.slug, author.profile_image,
                 author.content_published, author.total_read_count,
-                a.author_id, a.avg_read, SUM(b.average_rating)/COUNT(b.pratilipi_id), SUM(b.rating_count) as total_rating,
-                SUM(b.rating_count) /COUNT(b.pratilipi_id) as average_rating,
+                a.author_id, a.avg_read,
                 a.total_read,
-                (b.rating_count / a.total_read * 100 ) AS rate_read_ratio,
+                SUM(b.rating_count) as total_rating,
+                SUM(b.rating_count) /COUNT(b.pratilipi_id) as average_rating_count,
                 SUM(b.average_rating)/COUNT(b.pratilipi_id) AS average_rate,
-               ((b.rating_count / a.total_read * 100 ) / 2)  + (SUM(b.average_rating)/COUNT(b.pratilipi_id) * 10) AS rating_score,
+                (b.rating_count / a.total_read * 100 ) AS rate_read_ratio,
                a.total_content_published
                FROM
                    author.author AS author,
@@ -658,10 +658,9 @@ def get_top_authors(language):
     finally:
         disconnectdb(conn)
 
-    obj_list = [ Author() for i in range(len(record_set)) ]
-    for indx, row in enumerate(record_set):
-        for name in row:
-            setattr(obj_list[indx], name, row[name])
+    obj_list = [ ]
+    for i in record_set:
+        obj_list.append(i)
     return obj_list
 
 
