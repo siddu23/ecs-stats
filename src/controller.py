@@ -352,10 +352,12 @@ def get_top_authors(**kwargs):
 def get_user_feed(**kwargs):
     """ get user feed """
     try:
-        print(kwargs)
         validate_user_feed_request(kwargs)
         offset = int(kwargs['offset'][0]) if kwargs.has_key('offset') else 0
         feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset)
+
+        if len(feed_pratilipi_list) == 0:
+            raise FeedNotFound
 
         # get authors related to pratilipis
         author_ids = _join_authorids(feed_pratilipi_list)

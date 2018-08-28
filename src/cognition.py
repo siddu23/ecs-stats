@@ -471,116 +471,132 @@ def get_user_followed_authorIds(user_id):
     return author_ids
 
 def get_user_feed(user_id, offset):
-    limit = 200
-    loop_count = 0
+    try:
+        limit = 200
+        loop_count = 0
+        conn = connectdb()
+        user_following_author_list = []
+        pratilipi_published_list = []
+        pratilipi_rated_list = []
+        user_following_author_list = get_user_following(user_id, limit, conn)
+        block_pratilipi_calls = False
+        block_rated_pratilipi_calls = False
+        print(user_following_author_list)
+        if len(user_following_author_list) > 0:
+            while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
 
-    user_following_author_list = []
-    pratilipi_published_list = []
-    pratilipi_rated_list = []
-    user_following_author_list = get_user_following(user_id, limit)
-    block_pratilipi_calls = False
-    block_rated_pratilipi_calls = False
-    print(user_following_author_list)
-    if len(user_following_author_list):
-        while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
-            print("loop count is ", loop_count)
+                if block_rated_pratilipi_calls and block_pratilipi_calls:
+                    break
 
-            if block_rated_pratilipi_calls and block_pratilipi_calls:
-                break
+                if len(user_following_author_list) > 0:
+                    user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list, conn)
 
-            if len(user_following_author_list) > 0:
-                user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list)
+                    pratilipis = []
+                    rated_pratilipi = []
 
-                pratilipis = []
-                rated_pratilipi = []
+                    pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset, conn)
+                    pratilipi_published_list.extend(pratilipis)
 
-                pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset)
-                pratilipi_published_list.extend(pratilipis)
+                    if len(pratilipis) == 0:
+                        block_pratilipi_calls = True
 
-                if len(pratilipis) == 0:
-                    block_pratilipi_calls = True
+                    rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset, conn)
+                    pratilipi_rated_list.extend(rated_pratilipi)
 
-                rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset)
-                pratilipi_rated_list.extend(rated_pratilipi)
+                    if len(rated_pratilipi) == 0:
+                        block_rated_pratilipi_calls = True
 
-                if len(rated_pratilipi) == 0:
-                    block_rated_pratilipi_calls = True
+                loop_count = loop_count + 1
+                offset = offset + 1
 
-            loop_count = loop_count + 1
+        if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0:
+            pratilipi_published_list.extend(get_default_feed(offset, conn))
             offset = offset + 1
 
-    if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0:
+        pratilipi_published_list.extend(pratilipi_rated_list)
+        pratilipi_published_list = pratilipi_published_list[:30]
+
+        obj_list = [Pratilipi() for i in range(len(pratilipi_published_list))]
+        for indx, row in enumerate(pratilipi_published_list):
+            for name in row:
+                setattr(obj_list[indx], name, row[name])
+
+        return obj_list, offset
+    except Exception as err:
         raise FeedNotFound
-
-    pratilipi_published_list.extend(pratilipi_rated_list)
-    pratilipi_published_list = pratilipi_published_list[:30]
-
-    obj_list = [Pratilipi() for i in range(len(pratilipi_published_list))]
-    for indx, row in enumerate(pratilipi_published_list):
-        for name in row:
-            setattr(obj_list[indx], name, row[name])
-
-    return obj_list, offset
+    finally:
+        disconnectdb(conn)
 
 
-def get_user_following(user_id, limit):
-
+def get_default_feed(time_delay, conn):
+    pratilipis = []
     try:
-        conn = connectdb()
         cursor = conn.cursor()
-        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}""".format(user_id, limit)
+        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        time_delay = time_delay + 1
+        day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi WHERE state='PUBLISHED' and published_at > '{}' and published_at < '{}' order by read_count desc limit 10""".format(day2, day1)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
-        author_ids = []
+        for i in record_set:
+            pratilipis.append(i)
+    except Exception as err:
+        raise DbSelectError(err)
+
+    return pratilipis
+
+
+def get_user_following(user_id, limit, conn):
+    author_ids = []
+    try:
+        cursor = conn.cursor()
+        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}""".format(user_id, limit)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
         for i in record_set:
             author_ids.append(int(i['reference_id']))
     except Exception as err:
         raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
+
     return author_ids
 
-def get_user_id_list_from_athor_ids(author_id_list):
+def get_user_id_list_from_athor_ids(author_id_list, conn):
+    user_ids = []
     try:
-        conn = connectdb()
         cursor = conn.cursor()
         sql = """SELECT user_id FROM author.author WHERE id in {} """.format(tuple(author_id_list))
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
-        user_ids = []
         for i in record_set:
             user_ids.append(int(i['user_id']))
     except Exception as err:
         raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
+
     return user_ids
 
-def get_recent_pratilipis_published_by_authors(author_list, time_delay):
+def get_recent_pratilipis_published_by_authors(author_list, time_delay, conn):
+    pratilipis = []
+
     try:
-        conn = connectdb()
         cursor = conn.cursor()
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
         day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         sql = """SELECT * FROM pratilipi.pratilipi WHERE author_id in {} AND state='PUBLISHED' and published_at > '{}' and published_at < '{}' """.format(tuple(author_list), day2, day1)
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
-        pratilipis = []
         for i in record_set:
             pratilipis.append(i)
     except Exception as err:
         raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
+
     return pratilipis
 
-def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
+def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
+    pratilipis = []
+
     try:
-        conn = connectdb()
         cursor = conn.cursor()
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
@@ -592,16 +608,13 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay):
                     FROM social.review
                     WHERE user_id in {} AND rating > 3 AND state='PUBLISHED' AND reference_type='PRATILIPI' AND date_created > '{}' AND date_created < '{}')
                  AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), day2, day1)
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
-        pratilipis = []
         for i in record_set:
             pratilipis.append(i)
     except Exception as err:
         raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
+
     return pratilipis
 
 def get_top_authors(language):
@@ -664,7 +677,6 @@ def get_most_active_authors_list(language, time_delay, offset):
             where language='{}' AND state='PUBLISHED' AND published_at > '{}' AND published_at < '{}'
             group by author_id order by rank desc limit 20 offset {}""".format(language, day1, day2, offset)
 
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         author_ids = []
