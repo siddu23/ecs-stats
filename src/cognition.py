@@ -470,7 +470,7 @@ def get_user_followed_authorIds(user_id):
         disconnectdb(conn)
     return author_ids
 
-def get_user_feed(user_id, offset):
+def get_user_feed(user_id, offset, language):
     try:
         limit = 200
         loop_count = 0
@@ -510,7 +510,7 @@ def get_user_feed(user_id, offset):
                 offset = offset + 1
 
         if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0:
-            pratilipi_published_list.extend(get_default_feed(offset, conn))
+            pratilipi_published_list.extend(get_default_feed(offset, conn, language))
             offset = offset + 1
 
         pratilipi_published_list.extend(pratilipi_rated_list)
@@ -528,14 +528,16 @@ def get_user_feed(user_id, offset):
         disconnectdb(conn)
 
 
-def get_default_feed(time_delay, conn):
+def get_default_feed(time_delay, conn, language):
     pratilipis = []
     try:
         cursor = conn.cursor()
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
         day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi WHERE state='PUBLISHED' and published_at > '{}' and published_at < '{}' order by read_count desc limit 10""".format(day2, day1)
+        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi 
+        WHERE state='PUBLISHED' and language='{}' and published_at > '{}' and published_at < '{}' 
+        order by read_count desc limit 10""".format(language, day2, day1)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()

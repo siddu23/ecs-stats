@@ -354,7 +354,8 @@ def get_user_feed(**kwargs):
     try:
         validate_user_feed_request(kwargs)
         offset = int(kwargs['offset'][0]) if kwargs.has_key('offset') else 0
-        feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset)
+        language = kwargs['language'][0].lower() if 'language' in kwargs else 'HINDI'
+        feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset, language)
 
         if len(feed_pratilipi_list) == 0:
             raise FeedNotFound
