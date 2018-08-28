@@ -1,10 +1,10 @@
 import json
-
+import os
 from datetime import datetime
 from commonfns import timeit
 from pprint import pprint as p
 import supporting_services as supp_service
-
+from static import  translations
 def _set_key(d, k, v):
     """set dict key if its value is not None"""
     if v is not None:
@@ -218,19 +218,6 @@ def for_user_feed(kwargs):
         rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0
         author = authors[pratilipi.author_id]
         response_object = {}
-        if hasattr(pratilipi, 'user_rating'):
-            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
-            response_object = _set_key(response_object, 'feedType', 'RATING')
-        elif hasattr(pratilipi, 'is_default'):
-            response_object = _set_key(response_object, 'feedCreated',
-                                       int(pratilipi.published_at.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'feedType', 'GENERIC')
-            response_object = _set_key(response_object, 'feedMessage', 'popular last week')
-        else:
-            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.published_at.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'feedType', 'PUBLISH')
-
         response_pratilipi = {}
         response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi.id)
         response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi.title)
@@ -263,16 +250,37 @@ def for_user_feed(kwargs):
         data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
         data['slug'] = _author_slug_details(author)
 
+
+        if hasattr(pratilipi, 'user_rating'):
+            response_object = _set_key(response_object, 'feedCreated',
+                                       int(pratilipi.rating_created.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
+            response_object = _set_key(response_object, 'feedType', 'RATING')
+        elif hasattr(pratilipi, 'is_default'):
+            response_object = _set_key(response_object, 'feedCreated',
+                                       int(pratilipi.published_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedType', 'GENERIC')
+            author_name = data['displayName']
+            story_name = pratilipi.title if pratilipi.title != '' else pratilipi.title_en
+            message = translations.translations[kwargs['language']]['publish'].format(author_name = author_name, story_name = story_name)
+            # '%(last)s, %(first)s %(last)s' % {'first': "James", 'last': "Bond"}
+            response_object = _set_key(response_object, 'feedMessage', message)
+        else:
+            response_object = _set_key(response_object, 'feedCreated',
+                                       int(pratilipi.published_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedType', 'PUBLISH')
+
+
         response_pratilipi = _set_key(response_pratilipi, 'author', data)
         response_object['pratilipi'] = response_pratilipi
         response_dict['feedList'].append(response_object)
 
-        if kwargs['offset'] < 30 :
-            response_dict['finished'] = False
-        else:
-            response_dict['finished'] = True
+    if kwargs['offset'] < 30 :
+        response_dict['finished'] = False
+    else:
+        response_dict['finished'] = True
 
-        response_dict['offset'] = kwargs['offset']
+    response_dict['offset'] = kwargs['offset']
 
     return response_dict
 
