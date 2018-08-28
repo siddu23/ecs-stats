@@ -222,11 +222,15 @@ def for_user_feed(kwargs):
             response_object = _set_key(response_object, 'feedCreated', int(pratilipi.rating_created.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
             response_object = _set_key(response_object, 'feedType', 'RATING')
+        elif hasattr(pratilipi, 'is_default'):
+            response_object = _set_key(response_object, 'feedCreated',
+                                       int(pratilipi.published_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedType', 'GENERIC')
+            response_object = _set_key(response_object, 'feedMessage', 'popular last week')
         else:
-            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.updated_at.strftime("%s")) * 1000)
+            response_object = _set_key(response_object, 'feedCreated', int(pratilipi.published_at.strftime("%s")) * 1000)
             response_object = _set_key(response_object, 'feedType', 'PUBLISH')
 
-        print("processing pratilipis ", pratilipi.id)
         response_pratilipi = {}
         response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi.id)
         response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi.title)
