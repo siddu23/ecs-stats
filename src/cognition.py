@@ -634,9 +634,9 @@ def get_top_authors(language):
                            WHERE state = "PUBLISHED" AND published_at > '{}' AND language = '{}')
                            AS b
                                WHERE a.reference_id = b.id GROUP BY a.reference_id) AS b
-                   WHERE a.author_id = b.author_id AND a.total_read > 500 AND a.author_id = author.id
+                   WHERE a.author_id = b.author_id AND a.total_read > 100 AND a.author_id = author.id
                    GROUP BY a.author_id
-                   HAVING SUM(b.rating_count) /COUNT(b.pratilipi_id) > 20
+                   HAVING SUM(b.rating_count) /COUNT(b.pratilipi_id) > 5
                    ORDER BY average_rate DESC LIMIT 20;""".format(startday, language, startday, language)
         cursor.execute(sql)
         record_set = cursor.fetchall()
