@@ -775,7 +775,7 @@ def get_continue_reading(kwargs):
                  AND a.user_id = {}
                  AND b.reference_type = 'PRATILIPI'
                  AND b.state = 'ADDED'
-                 AND b.date_updated BETWEEN CURRENT_TIMESTAMP() - INTERVAL 30 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+                 AND b.date_updated BETWEEN CURRENT_TIMESTAMP() - INTERVAL 60 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
                  AND c.state = 'PUBLISHED'
                  AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND d.user_id = {}
@@ -793,7 +793,7 @@ def get_continue_reading(kwargs):
                  WHERE a.pratilipi_id = b.id
                  AND a.property = 'READ_WORD_COUNT'
                  AND a.property_value > 800
-                 AND a.updated_at BETWEEN CURRENT_TIMESTAMP() - INTERVAL 8 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+                 AND a.updated_at BETWEEN CURRENT_TIMESTAMP() - INTERVAL 30 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
                  AND a.user_id = {}
                  AND b.state = 'PUBLISHED'
                  AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
@@ -824,7 +824,7 @@ def get_continue_reading(kwargs):
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except NoDataFound as err:
-        raise NoDataFound
+        raise NoDataFound(err)
     except Exception as err:
         raise DbSelectError(err)
     finally:
@@ -836,13 +836,15 @@ def get_continue_reading(kwargs):
 
     library_pratilipis = {}
     for i in library_set:
-        k = "{}-{}".format(i['reading_percentage'], i['id'])
+        rp = i['reading_percentage'] if i['reading_percentage'] <= 100 else 100.0
+        k = "{}-{}".format(rp, i['id'])
         library_pratilipis[k] = i
 
     read_pratilipis = {}
     for i in read_set:
         if i['id'] not in rating_list: continue
-        k = "{}-{}".format(i['reading_percentage'], i['id'])
+        rp = i['reading_percentage'] if i['reading_percentage'] <= 100 else 100.0
+        k = "{}-{}".format(rp, i['id'])
         read_pratilipis[k] = i
 
     if len(library_pratilipis) == 0 and len(read_pratilipis) == 0: raise NoDataFound("no pratilipi found after avg rating filter")
