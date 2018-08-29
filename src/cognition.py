@@ -784,7 +784,7 @@ def get_continue_reading(kwargs):
         record_count = cursor.fetchall()
         for i in record_count: total_pratilipis = total_pratilipis + i['cnt']
 
-        if total_pratilipis == 0: raise PratilipiNotFound
+        if total_pratilipis < 2: raise PratilipiNotFound
 
         # get data from library
         sql = """SELECT * FROM
