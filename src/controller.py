@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit, transform_request
+from commonfns import request_parser, log, timeit, transform_request, transform_request_v1
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -460,3 +460,48 @@ def get_reader_score(**kwargs):
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+@timeit
+@request_parser
+def get_continue_reading(**kwargs):
+    """get continue reading"""
+    try:
+        # query param
+        kwargs = transform_request_v1(kwargs)
+
+        # validate request
+        validate_continue_reading_request(kwargs)
+
+        # get pratilipis
+        pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
+
+        # get authors related to pratilipis
+        author_ids = _join_authorids(pratilipis)
+        authors = cognition.get_authors(author_ids)
+        author_dict = _object_to_dict(authors)
+
+        # get ratings related to pratilipis
+        pratilipi_ids = _join_pratilipiids(pratilipis)
+        ratings = cognition.get_ratings(pratilipi_ids)
+        rating_dict = _object_to_dict(ratings)
+
+        response_kwargs = { 'pratilipis': pratilipis,
+                            'authors': author_dict,
+                            'ratings': rating_dict,
+                            'librarys': {},
+                            'total_pratilipis': total_pratilipis,
+                            'limit': kwargs['limit'],
+                            'offset': kwargs['offset'] }
+
+        response = response_builder.for_all(response_kwargs)
+
+        sys.stdout.flush()
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=404)
+    except PratilipiNotFound as err:
+        return bottle.HTTPResponse(status=404)
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
