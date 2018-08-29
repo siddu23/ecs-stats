@@ -760,6 +760,7 @@ def get_continue_reading(kwargs):
         limit = kwargs['limit']
         offset = kwargs['offset']
         total_pratilipis = 0
+        print "hello 11"
 
         # get pratilipis added to library
         sql = """SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, 
@@ -783,6 +784,7 @@ def get_continue_reading(kwargs):
         cursor.execute(sql)
         library_set = cursor.fetchall()
         total_pratilipis = cursor.rowcount
+        print "hello 12"
 
         # get pratilipis read by user
         sql = """SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, 
@@ -802,6 +804,7 @@ def get_continue_reading(kwargs):
         cursor.execute(sql)
         read_set = cursor.fetchall()
         total_pratilipis = total_pratilipis + cursor.rowcount
+        print "hello 13"
 
         if total_pratilipis == 0: raise PratilipiNotFound
 
@@ -819,6 +822,7 @@ def get_continue_reading(kwargs):
                  HAVING avg_rating > 3.5""".format(pratilipiids)
         cursor.execute(sql)
         rating_set = cursor.fetchall()
+        print "hello 14"
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except Exception as err:
@@ -829,17 +833,20 @@ def get_continue_reading(kwargs):
     # apply avg_rating filter
     rating_list = []
     for i in rating_set: rating_list.append(i['id'])
+    print "hello 15"
 
     library_pratilipis = {}
     for i in library_set:
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         library_pratilipis[k] = i
+    print "hello 16"
 
     read_pratilipis = {}
     for i in read_set:
         if i['id'] not in rating_list: continue
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         read_pratilipis[k] = i
+    print "hello 17"
 
     # order data
     all_pratilipis = []
@@ -847,6 +854,7 @@ def get_continue_reading(kwargs):
     lib_keys.sort()
     for i in reversed(lib_keys):
         all_pratilipis.append(library_pratilipis[i])
+    print "hello 18"
 
     read_keys = read_pratilipis.keys()
     read_keys.sort()
@@ -855,13 +863,16 @@ def get_continue_reading(kwargs):
         if i in library_pratilipis:
             continue
         all_pratilipis.append(read_pratilipis[i])
+    print "hello 19"
 
     # slice data
     sliced_list = list(islice(islice(all_pratilipis, offset, None), limit))
+    print "hello 20"
 
     # prepare list of objects
     obj_list = [ Pratilipi() for i in range(len(sliced_list)) ]
     for indx, row in enumerate(sliced_list):
         for name in row:
             setattr(obj_list[indx], name, row[name])
+    print "hello 21"
     return obj_list, total_pratilipis
