@@ -479,9 +479,12 @@ def get_continue_reading(**kwargs):
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
         print "get continue reading 2"
 
+        print pratilipis
         # get authors related to pratilipis
         author_ids = _join_authorids(pratilipis)
+        print "get continue reading 21"
         authors = cognition.get_authors(author_ids)
+        print "get continue reading 22"
         author_dict = _object_to_dict(authors)
         print "get continue reading 3"
 
@@ -506,7 +509,7 @@ def get_continue_reading(**kwargs):
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
-        return bottle.HTTPResponse(status=404)
+        return bottle.HTTPResponse(status=400)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
