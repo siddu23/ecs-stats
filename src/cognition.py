@@ -760,7 +760,6 @@ def get_continue_reading(kwargs):
         limit = kwargs['limit']
         offset = kwargs['offset']
         total_pratilipis = 0
-        print "hello 11"
 
         # get pratilipis added to library
         sql = """SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, 
@@ -781,11 +780,9 @@ def get_continue_reading(kwargs):
                  AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND d.user_id = {}
                  AND d.property = 'READ_WORD_COUNT'""".format(user_id, user_id)
-        print sql
         cursor.execute(sql)
         library_set = cursor.fetchall()
         total_pratilipis = cursor.rowcount
-        print "hello 12"
 
         # get pratilipis read by user
         sql = """SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, 
@@ -802,13 +799,11 @@ def get_continue_reading(kwargs):
                  AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND b.reading_time > 0
                  AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id)
-        print sql
         cursor.execute(sql)
         read_set = cursor.fetchall()
         total_pratilipis = total_pratilipis + cursor.rowcount
-        print "hello 13"
 
-        if total_pratilipis == 0: raise PratilipiNotFound
+        if total_pratilipis == 0: raise NoDataFound("nothing in library and read history")
 
         # get avg rating for selected pratilipis
         temp = []
@@ -824,12 +819,12 @@ def get_continue_reading(kwargs):
                      AND reference_id IN ({})
                      GROUP BY 1
                      HAVING avg_rating > 3.5""".format(pratilipiids)
-            print sql
             cursor.execute(sql)
             rating_set = cursor.fetchall()
-        print "hello 14"
     except PratilipiNotFound as err:
         raise PratilipiNotFound
+    except NoDataFound as err:
+        raise NoDataFound
     except Exception as err:
         raise DbSelectError(err)
     finally:
@@ -838,29 +833,19 @@ def get_continue_reading(kwargs):
     # apply avg_rating filter
     rating_list = []
     for i in rating_set: rating_list.append(int(i['id']))
-    print "hello 15"
 
     library_pratilipis = {}
     for i in library_set:
-        print "in lib ", i
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         library_pratilipis[k] = i
-    print "hello 16"
 
-    print rating_list
     read_pratilipis = {}
     for i in read_set:
-        print "in read - ", i
         if i['id'] not in rating_list: continue
-        print "in read in - ", i
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         read_pratilipis[k] = i
-    print "hello 17"
 
-    print len(library_pratilipis)
-    print len(read_pratilipis)
-
-    if len(library_pratilipis) == 0 and len(read_pratilipis) == 0: raise PratilipiNotFound
+    if len(library_pratilipis) == 0 and len(read_pratilipis) == 0: raise NoDataFound("no pratilipi found after avg rating filter")
 
     # order data
     all_pratilipis = []
@@ -868,7 +853,6 @@ def get_continue_reading(kwargs):
     lib_keys.sort()
     for i in reversed(lib_keys):
         all_pratilipis.append(library_pratilipis[i])
-    print "hello 18"
 
     read_keys = read_pratilipis.keys()
     read_keys.sort()
@@ -877,18 +861,15 @@ def get_continue_reading(kwargs):
         if i in library_pratilipis:
             continue
         all_pratilipis.append(read_pratilipis[i])
-    print "hello 19"
 
     # slice data
     sliced_list = list(islice(islice(all_pratilipis, offset, None), limit))
-    print "hello 20"
 
-    if len(sliced_list) == 0: raise PratilipiNotFound
+    if len(sliced_list) == 0: raise NoDataFound("no pratilipi found after limit and offset")
 
     # prepare list of objects
     obj_list = [ Pratilipi() for i in range(len(sliced_list)) ]
     for indx, row in enumerate(sliced_list):
         for name in row:
             setattr(obj_list[indx], name, row[name])
-    print "hello 21"
     return obj_list, total_pratilipis

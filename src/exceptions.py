@@ -72,3 +72,9 @@ class UserIdRequired(Exception):
     def __str__(self):
         return str(self.message)
 
+class NoDataFound(Exception):
+    def __init__(self, err):
+        self.message = 'no data found; {}'.format(err)
+    def __str__(self):
+        return str(self.message)
+
