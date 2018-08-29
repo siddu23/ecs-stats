@@ -781,6 +781,7 @@ def get_continue_reading(kwargs):
                  AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND d.user_id = {}
                  AND d.property = 'READ_WORD_COUNT'""".format(user_id, user_id)
+        print sql
         cursor.execute(sql)
         library_set = cursor.fetchall()
         total_pratilipis = cursor.rowcount
@@ -801,6 +802,7 @@ def get_continue_reading(kwargs):
                  AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND b.reading_time > 0
                  AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id)
+        print sql
         cursor.execute(sql)
         read_set = cursor.fetchall()
         total_pratilipis = total_pratilipis + cursor.rowcount
@@ -813,15 +815,18 @@ def get_continue_reading(kwargs):
         for i in read_set: temp.append(str(i['id']))
         pratilipiids = ','.join(temp)
 
-        sql = """SELECT reference_id as id, AVG(rating) as avg_rating
-                 FROM social.review
-                 WHERE reference_type = 'PRATILIPI'
-                 AND state = 'PUBLISHED'
-                 AND reference_id IN ({})
-                 GROUP BY 1
-                 HAVING avg_rating > 3.5""".format(pratilipiids)
-        cursor.execute(sql)
-        rating_set = cursor.fetchall()
+        rating_set = []
+        if len(pratilipiids) > 0:
+            sql = """SELECT reference_id as id, AVG(rating) as avg_rating
+                     FROM social.review
+                     WHERE reference_type = 'PRATILIPI'
+                     AND state = 'PUBLISHED'
+                     AND reference_id IN ({})
+                     GROUP BY 1
+                     HAVING avg_rating > 3.5""".format(pratilipiids)
+            print sql
+            cursor.execute(sql)
+            rating_set = cursor.fetchall()
         print "hello 14"
     except PratilipiNotFound as err:
         raise PratilipiNotFound
