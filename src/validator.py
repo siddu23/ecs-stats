@@ -42,3 +42,7 @@ def validate_top_authors_request(req):
 
     if req['language'].lower() not in LANGUAGE:
         raise LanguageInvalid
+
+def validate_continue_reading_request(req):
+    if req['user_id'] is None or req['user_id'] == 0:
+        raise UserIdRequired
