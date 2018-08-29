@@ -1,6 +1,7 @@
 from exceptions import *
 from dbutil import *
 from model import *
+from itertools import islice
 
 def health():
     result = {"state": "healthy"}
@@ -754,71 +755,70 @@ def get_continue_reading(kwargs):
         conn = connectdb()
         cursor = conn.cursor()
 
-        # get total pratilipis
-        sql = """SELECT * FROM
-                     (SELECT COUNT(*) as cnt
-                      FROM library.library a, library.resource b, pratilipi.pratilipi c
-                      WHERE a.id = b.library_id
-                      AND b.reference_id = c.id
-                      AND b.reference_type = 'PRATILIPI'
-                      AND b.state = 'ADDED'
-                      AND a.state = 'ACTIVE'
-                      AND c.state = 'PUBLISHED'
-                      AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                      AND a.user_id = {}) as set1
-                 UNION
-                 SELECT * FROM
-                     (SELECT COUNT(*) as cnt
-                      FROM user_pratilipi.user_pratilipi a, pratilipi.pratilipi b
-                      WHERE a.pratilipi_id = b.id
-                      AND b.state = 'PUBLISHED'
-                      AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                      AND a.property = 'READ_WORD_COUNT'
-                      AND a.user_id = {}
-                      AND b.reading_time > 0
-                      AND a.property_value > 0
-                      AND a.property_value*60*100/b.reading_time BETWEEN 30 AND 90) as set2""".format(kwargs['user_id'], kwargs['user_id'])
-        print sql
-        cursor.execute(sql)
+        # fetch data
+        user_id = kwargs['user_id']
+        limit = kwargs['limit']
+        offset = kwargs['offset']
         total_pratilipis = 0
-        record_count = cursor.fetchall()
-        for i in record_count: total_pratilipis = total_pratilipis + i['cnt']
 
-        if total_pratilipis < 2: raise PratilipiNotFound
-
-        # get data from library
-        sql = """SELECT * FROM
-                     (SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, c.read_count_offset + c.read_count as read_count,
-                      c.title, c.title_en, c.slug, c.slug_en, c.slug_id, c.reading_time, c.updated_at
-                      FROM library.library a, library.resource b, pratilipi.pratilipi c
-                      WHERE a.id = b.library_id
-                      AND b.reference_id = c.id
-                      AND b.reference_type = 'PRATILIPI'
-                      AND b.state = 'ADDED'
-                      AND a.state = 'ACTIVE'
-                      AND c.state = 'PUBLISHED'
-                      AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                      AND a.user_id = {}
-                      ORDER BY b.date_updated desc) as set1
-                 UNION
-                 SELECT * FROM
-                     (SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, b.read_count_offset + b.read_count as read_count,
-                      b.title, b.title_en, b.slug, b.slug_en, b.slug_id, b.reading_time, b.updated_at
-                      FROM user_pratilipi.user_pratilipi a, pratilipi.pratilipi b
-                      WHERE a.pratilipi_id = b.id
-                      AND b.state = 'PUBLISHED'
-                      AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                      AND a.property = 'READ_WORD_COUNT'
-                      AND a.user_id = {}
-                      AND b.reading_time > 0
-                      AND a.property_value > 0
-                      AND a.property_value*60*100/b.reading_time BETWEEN 30 AND 90
-                      ORDER BY a.updated_at desc, a.property_value*60*100/b.reading_time desc) as set2
-                 LIMIT {}
-                 OFFSET {}""".format(kwargs['user_id'], kwargs['user_id'], kwargs['limit'], kwargs['offset'])
-        print sql
+        # get pratilipis added to library
+        sql = """SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, 
+                 c.read_count_offset + c.read_count as read_count,
+                 c.title, c.title_en, c.slug, c.slug_en, c.slug_id, c.reading_time, c.updated_at,
+                 d.property_value*60*100/c.reading_time as reading_percentage
+                 FROM library.library a, library.resource b, pratilipi.pratilipi c, user_pratilipi.user_pratilipi d
+                 WHERE a.id = b.library_id
+                 AND b.reference_id = c.id
+                 AND b.reference_id = d.pratilipi_id
+                 AND a.user_id = d.user_id
+                 AND a.state = 'ACTIVE'
+                 AND a.user_id = {}
+                 AND b.reference_type = 'PRATILIPI'
+                 AND b.state = 'ADDED'
+                 AND b.date_updated BETWEEN CURRENT_TIMESTAMP() - INTERVAL 30 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+                 AND c.state = 'PUBLISHED'
+                 AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND d.user_id = {}
+                 AND d.property = 'READ_WORD_COUNT'""".format(user_id, user_id)
         cursor.execute(sql)
-        record_set = cursor.fetchall()
+        library_set = cursor.fetchall()
+        total_pratilipis = cursor.rowcount
+
+        # get pratilipis read by user
+        sql = """SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, 
+                 b.read_count_offset + b.read_count as read_count,
+                 b.title, b.title_en, b.slug, b.slug_en, b.slug_id, b.reading_time, b.updated_at,
+                 a.property_value*60*100/b.reading_time as reading_percentage
+                 FROM user_pratilipi.user_pratilipi a, pratilipi.pratilipi b
+                 WHERE a.pratilipi_id = b.id
+                 AND a.property = 'READ_WORD_COUNT'
+                 AND a.property_value > 800
+                 AND a.updated_at BETWEEN CURRENT_TIMESTAMP() - INTERVAL 8 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+                 AND a.user_id = {}
+                 AND b.state = 'PUBLISHED'
+                 AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND b.reading_time > 0
+                 AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id)
+        cursor.execute(sql)
+        read_set = cursor.fetchall()
+        total_pratilipis = total_pratilipis + cursor.rowcount
+
+        if total_pratilipis == 0: raise PratilipiNotFound
+
+        # get avg rating for selected pratilipis
+        temp = []
+        for i in read_set: temp.append(str(i['id']))
+        pratilipiids = ','.join(temp)
+
+        sql = """SELECT reference_id as id, AVG(rating) as avg_rating
+                 FROM social.review
+                 WHERE reference_type = 'PRATILIPI'
+                 AND state = 'PUBLISHED'
+                 AND reference_id IN ({})
+                 GROUP BY 1
+                 HAVING avg_rating > 3.5""".format(pratilipiids)
+        cursor.execute(sql)
+        rating_set = cursor.fetchall()
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except Exception as err:
@@ -826,8 +826,42 @@ def get_continue_reading(kwargs):
     finally:
         disconnectdb(conn)
 
-    obj_list = [ Pratilipi() for i in range(len(record_set)) ]
-    for indx, row in enumerate(record_set):
+    # apply avg_rating filter
+    rating_list = []
+    for i in rating_set: rating_list.append(i['id'])
+
+    library_pratilipis = {}
+    for i in library_set:
+        k = "{}-{}".format(i['reading_percentage'], i['id'])
+        library_pratilipis[k] = i
+
+    read_pratilipis = {}
+    for i in read_set:
+        if i['id'] not in rating_list: continue
+        k = "{}-{}".format(i['reading_percentage'], i['id'])
+        read_pratilipis[k] = i
+
+    # order data
+    all_pratilipis = []
+    lib_keys = library_pratilipis.keys()
+    lib_keys.sort()
+    for i in reversed(lib_keys):
+        all_pratilipis.append(library_pratilipis[i])
+
+    read_keys = read_pratilipis.keys()
+    read_keys.sort()
+    for i in reversed(read_keys):
+        # avoid dups
+        if i in library_pratilipis:
+            continue
+        all_pratilipis.append(read_pratilipis[i])
+
+    # slice data
+    sliced_list = list(islice(islice(all_pratilipis, offset, None), limit))
+
+    # prepare list of objects
+    obj_list = [ Pratilipi() for i in range(len(sliced_list)) ]
+    for indx, row in enumerate(sliced_list):
         for name in row:
             setattr(obj_list[indx], name, row[name])
     return obj_list, total_pratilipis
