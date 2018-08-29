@@ -816,7 +816,7 @@ def get_continue_reading(kwargs):
         pratilipiids = ','.join(temp)
 
         rating_set = []
-        if len(pratilipiids) > 0:
+        if len(temp) > 0:
             sql = """SELECT reference_id as id, AVG(rating) as avg_rating
                      FROM social.review
                      WHERE reference_type = 'PRATILIPI'
@@ -837,21 +837,30 @@ def get_continue_reading(kwargs):
 
     # apply avg_rating filter
     rating_list = []
-    for i in rating_set: rating_list.append(i['id'])
+    for i in rating_set: rating_list.append(int(i['id']))
     print "hello 15"
 
     library_pratilipis = {}
     for i in library_set:
+        print "in lib ", i
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         library_pratilipis[k] = i
     print "hello 16"
 
+    print rating_list
     read_pratilipis = {}
     for i in read_set:
+        print "in read - ", i
         if i['id'] not in rating_list: continue
+        print "in read in - ", i
         k = "{}-{}".format(i['reading_percentage'], i['id'])
         read_pratilipis[k] = i
     print "hello 17"
+
+    print len(library_pratilipis)
+    print len(read_pratilipis)
+
+    if len(library_pratilipis) == 0 and len(read_pratilipis) == 0: raise PratilipiNotFound
 
     # order data
     all_pratilipis = []
@@ -873,6 +882,8 @@ def get_continue_reading(kwargs):
     # slice data
     sliced_list = list(islice(islice(all_pratilipis, offset, None), limit))
     print "hello 20"
+
+    if len(sliced_list) == 0: raise PratilipiNotFound
 
     # prepare list of objects
     obj_list = [ Pratilipi() for i in range(len(sliced_list)) ]
