@@ -169,7 +169,7 @@ def for_author_dashboard(kwargs):
         response['highestReviewedPratilipi'].append(temp)
         highest_rating = int(highest_rating) + int(temp['avgRating'])
 
-    response['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
+    response['total']['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
     return json.dumps(response)
 
 def for_author_recommendations(kwargs):
