@@ -467,24 +467,29 @@ def get_reader_score(**kwargs):
 def get_continue_reading(**kwargs):
     """get continue reading"""
     try:
+        print "get continue reading 1"
         # query param
         kwargs = transform_request_v1(kwargs)
+        print kwargs
 
         # validate request
         validate_continue_reading_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
+        print "get continue reading 2"
 
         # get authors related to pratilipis
         author_ids = _join_authorids(pratilipis)
         authors = cognition.get_authors(author_ids)
         author_dict = _object_to_dict(authors)
+        print "get continue reading 3"
 
         # get ratings related to pratilipis
         pratilipi_ids = _join_pratilipiids(pratilipis)
         ratings = cognition.get_ratings(pratilipi_ids)
         rating_dict = _object_to_dict(ratings)
+        print "get continue reading 4"
 
         response_kwargs = { 'pratilipis': pratilipis,
                             'authors': author_dict,
@@ -493,8 +498,10 @@ def get_continue_reading(**kwargs):
                             'total_pratilipis': total_pratilipis,
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
+        print "get continue reading 5"
 
         response = response_builder.for_all(response_kwargs)
+        print "get continue reading 6"
 
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
