@@ -374,7 +374,8 @@ def get_user_feed(**kwargs):
         response_kwargs = {'pratilipis': feed_pratilipi_list,
                            'authors': author_dict,
                            'ratings': rating_dict,
-                           'offset': offset}
+                           'offset': offset,
+                           'language': language}
         response = response_builder.for_user_feed(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
