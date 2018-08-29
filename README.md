@@ -106,3 +106,33 @@
 }
 ```
 ---
+#### url: /stats/v1.0/continue_reading?userid=121212&limit=10&offset=0
+#### method: GET
+#### response:
+```
+{
+    "found": 100,
+    "limit": 100,
+    "offset": 1,
+    "pratilipiList": [{
+        "pratilipiId": 6755373518892391,
+        "displayTitle": "लव @ ऑनलाइन",
+        "pageUrl": "/story/लव-ऑनलाइन-ioab6rm93wuv",
+        "slug": "/story/लव-ऑनलाइन-ioab6rm93wuv",
+        "coverImageUrl": "https://0.ptlp.co/pratilipi/cover?pratilipiId=6028556548177920&version=1474289423867",
+        "readingTime": 466,
+        "readCount": 9227,
+        "averageRating": 3.80,
+        "addToLib": false,
+        "type": "STORY",
+        "contentType": "PRATILIPI",
+        "author": {
+            "authorId": 5320879769649152,
+            "displayName": "अपर्णा सिंह",
+            "pageUrl": "/user/अपर्णा-सिंह-p85ewi1ol9",
+            "slug": "/user/helloworld-p5ewi1ol9"
+        }
+    }]
+}
+```
+---
