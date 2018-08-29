@@ -16,6 +16,7 @@ RUN mkdir -p /service/src
 RUN mkdir -p /service/conf
 
 COPY src/* /service/src/
+COPY static/* /service/static/
 COPY conf/* /service/conf/
 
 #setup nginx
