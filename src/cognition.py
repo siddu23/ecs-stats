@@ -746,3 +746,88 @@ def get_reader_score(kwargs):
         tier = "1%"
 
     return word_count, no_of_books_read, tier
+
+def get_continue_reading(kwargs):
+    """get continue reading"""
+    try:
+        # TODO - optimize later; each request conn happens
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        # get total pratilipis
+        sql = """SELECT * FROM
+                     (SELECT COUNT(*) as cnt
+                      FROM library.library a, library.resource b, pratilipi.pratilipi c
+                      WHERE a.id = b.library_id
+                      AND b.reference_id = c.id
+                      AND b.reference_type = 'PRATILIPI'
+                      AND b.state = 'ADDED'
+                      AND a.state = 'ACTIVE'
+                      AND c.state = 'PUBLISHED'
+                      AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                      AND a.user_id = {}) as set1
+                 UNION
+                 SELECT * FROM
+                     (SELECT COUNT(*) as cnt
+                      FROM user_pratilipi.user_pratilipi a, pratilipi.pratilipi b
+                      WHERE a.pratilipi_id = b.id
+                      AND b.state = 'PUBLISHED'
+                      AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                      AND a.property = 'READ_WORD_COUNT'
+                      AND a.user_id = {}
+                      AND b.reading_time > 0
+                      AND a.property_value > 0
+                      AND a.property_value*60*100/b.reading_time BETWEEN 30 AND 90) as set2""".format(kwargs['user_id'], kwargs['user_id'])
+        print sql
+        cursor.execute(sql)
+        total_pratilipis = 0
+        record_count = cursor.fetchall()
+        for i in record_count: total_pratilipis = total_pratilipis + i['cnt']
+
+        if total_pratilipis == 0: raise PratilipiNotFound
+
+        # get data from library
+        sql = """SELECT * FROM
+                     (SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, c.read_count_offset + c.read_count as read_count,
+                      c.title, c.title_en, c.slug, c.slug_en, c.slug_id, c.reading_time, c.updated_at
+                      FROM library.library a, library.resource b, pratilipi.pratilipi c
+                      WHERE a.id = b.library_id
+                      AND b.reference_id = c.id
+                      AND b.reference_type = 'PRATILIPI'
+                      AND b.state = 'ADDED'
+                      AND a.state = 'ACTIVE'
+                      AND c.state = 'PUBLISHED'
+                      AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                      AND a.user_id = {}
+                      ORDER BY b.date_updated desc) as set1
+                 UNION
+                 SELECT * FROM
+                     (SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, b.read_count_offset + b.read_count as read_count,
+                      b.title, b.title_en, b.slug, b.slug_en, b.slug_id, b.reading_time, b.updated_at
+                      FROM user_pratilipi.user_pratilipi a, pratilipi.pratilipi b
+                      WHERE a.pratilipi_id = b.id
+                      AND b.state = 'PUBLISHED'
+                      AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                      AND a.property = 'READ_WORD_COUNT'
+                      AND a.user_id = {}
+                      AND b.reading_time > 0
+                      AND a.property_value > 0
+                      AND a.property_value*60*100/b.reading_time BETWEEN 30 AND 90
+                      ORDER BY a.updated_at desc, a.property_value*60*100/b.reading_time desc) as set2
+                 LIMIT {}
+                 OFFSET {}""".format(kwargs['user_id'], kwargs['user_id'], kwargs['limit'], kwargs['offset'])
+        print sql
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+    except PratilipiNotFound as err:
+        raise PratilipiNotFound
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    obj_list = [ Pratilipi() for i in range(len(record_set)) ]
+    for indx, row in enumerate(record_set):
+        for name in row:
+            setattr(obj_list[indx], name, row[name])
+    return obj_list, total_pratilipis
