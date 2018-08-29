@@ -55,6 +55,13 @@ server {
         proxy_cache_key $request_uri;
     }
 
+    location /stats/v1.0/continue_reading {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 60m;
+        proxy_cache_key $scheme$proxy_host$uri$is_args$args$http_user_id;
+    }
+
     location / {
         proxy_pass http://unix:/service/service.sock;
         proxy_cache_min_uses 1;
