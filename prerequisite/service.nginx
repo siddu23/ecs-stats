@@ -50,9 +50,7 @@ server {
 
     location /stats/v1.0/top_authors {
         proxy_pass http://unix:/service/service.sock;
-        proxy_cache_min_uses 1;
-        proxy_cache_valid 200 1400m;
-        proxy_cache_key $request_uri;
+        proxy_no_cache 1;
     }
 
     location /stats/v1.0/continue_reading {
