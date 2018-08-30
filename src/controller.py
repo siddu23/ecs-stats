@@ -329,6 +329,7 @@ def get_top_authors(**kwargs):
     """ Top authors """
     try:
         # query param
+        print kwargs
         kwargs = transform_request(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
 
@@ -507,4 +508,3 @@ def get_continue_reading(**kwargs):
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
-
