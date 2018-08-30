@@ -1,5 +1,6 @@
 from exceptions import *
 from dbutil import *
+from redisutil import *
 from model import *
 from itertools import islice
 
@@ -622,48 +623,16 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
 
 def get_top_authors(language):
     try:
-        conn = connectdb()
-        cursor = conn.cursor()
-        startday = (datetime.now() + timedelta(days=-7)).strftime("%Y-%m-%d")
-        sql = """SELECT author.first_name, author.first_name_en, author.last_name, author.last_name_en, author.pen_name, author.pen_name_en,
-                author.firstname_lastname, author.firstnameen_lastnameen, author.slug, author.profile_image,
-                author.content_published, author.total_read_count,
-                a.author_id, a.avg_read,
-                a.total_read,
-                SUM(b.rating_count) as total_rating,
-                SUM(b.rating_count) /COUNT(b.pratilipi_id) as average_rating_count,
-                SUM(b.average_rating)/COUNT(b.pratilipi_id) AS average_rate,
-                (b.rating_count / a.total_read * 100 ) AS rate_read_ratio,
-               a.total_content_published
-               FROM
-                   author.author AS author,
-                   (SELECT author_id, read_count, id, SUM(read_count) / COUNT(DISTINCT id) AS avg_read,
-                   COUNT(DISTINCT id) AS total_content_published,
-                   SUM(read_count) AS total_read
-                       FROM pratilipi.pratilipi
-                       WHERE state = "PUBLISHED" AND published_at > '{}' AND language = '{}' GROUP BY author_id) AS a,
-                       (SELECT SUM(a.rating)/COUNT(a.user_id) AS average_rating,
-                           COUNT(a.user_id) AS rating_count, a.reference_id AS pratilipi_id, b.author_id
-                           FROM social.review AS a,
-                       (SELECT id, author_id
-                           FROM pratilipi.pratilipi
-                           WHERE state = "PUBLISHED" AND published_at > '{}' AND language = '{}')
-                           AS b
-                               WHERE a.reference_id = b.id GROUP BY a.reference_id) AS b
-                   WHERE a.author_id = b.author_id AND a.total_read > 100 AND a.author_id = author.id
-                   GROUP BY a.author_id
-                   HAVING SUM(b.rating_count) /COUNT(b.pratilipi_id) > 5
-                   ORDER BY average_rate DESC LIMIT 20;""".format(startday, language, startday, language)
-        cursor.execute(sql)
-        record_set = cursor.fetchall()
+        conn = connect_redis()
+        author_data = conn.hget('ecsstats:top_authors', language)
+        obj_list = []
+        if author_data:
+            obj_list = json.loads(author_data)
     except Exception as err:
-        raise DbSelectError(err)
+        raise RedisConnectionError(err)
     finally:
-        disconnectdb(conn)
+        disconnect_redis(conn)
 
-    obj_list = [ ]
-    for i in record_set:
-        obj_list.append(i)
     return obj_list
 
 
@@ -677,7 +646,7 @@ def get_most_active_authors_list(language, time_delay, offset):
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
 
         sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi
-            where language='{}' AND state='PUBLISHED' AND published_at > '{}' AND published_at < '{}'
+            where language='{}' AND state='PUBLISHED' AND reading_time > 60 AND published_at > '{}' AND published_at < '{}'
             group by author_id order by rank desc limit 20 offset {}""".format(language, day1, day2, offset)
 
         cursor.execute(sql)

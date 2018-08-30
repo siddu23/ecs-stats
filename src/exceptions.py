@@ -23,6 +23,12 @@ class DbUpdateError(Exception):
     def __str__(self):
         return str(self.message)
 
+class RedisConnectionError(Exception):
+    def __init__(self, err):
+        self.message = 'redis connection issue; {}'.format(err)
+    def __str__(self):
+        return str(self.message)
+
 # service specific
 class LanguageInvalid(Exception):
     def __init__(self):
@@ -77,4 +83,3 @@ class NoDataFound(Exception):
         self.message = 'no data found; {}'.format(err)
     def __str__(self):
         return str(self.message)
-
