@@ -3,6 +3,7 @@ from dbutil import *
 from redisutil import *
 from model import *
 from itertools import islice
+import json
 
 def health():
     result = {"state": "healthy"}
@@ -537,8 +538,8 @@ def get_default_feed(time_delay, conn, language):
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
         day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi 
-        WHERE state='PUBLISHED' and language='{}' and published_at > '{}' and published_at < '{}' 
+        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi
+        WHERE state='PUBLISHED' and language='{}' and published_at > '{}' and published_at < '{}'
         order by read_count desc limit 10""".format(language, day2, day1)
         print(sql)
         cursor.execute(sql)
@@ -731,7 +732,7 @@ def get_continue_reading(kwargs):
         total_pratilipis = 0
 
         # get pratilipis added to library
-        sql = """SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type, 
+        sql = """SELECT c.id, c.author_id, c.content_type, c.cover_image, c.language, c.type,
                  c.read_count_offset + c.read_count as read_count,
                  c.title, c.title_en, c.slug, c.slug_en, c.slug_id, c.reading_time, c.updated_at,
                  d.property_value*60*100/c.reading_time as reading_percentage
@@ -754,7 +755,7 @@ def get_continue_reading(kwargs):
         total_pratilipis = cursor.rowcount
 
         # get pratilipis read by user
-        sql = """SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type, 
+        sql = """SELECT b.id, b.author_id, b.content_type, b.cover_image, b.language, b.type,
                  b.read_count_offset + b.read_count as read_count,
                  b.title, b.title_en, b.slug, b.slug_en, b.slug_id, b.reading_time, b.updated_at,
                  a.property_value*60*100/b.reading_time as reading_percentage
