@@ -459,7 +459,7 @@ def get_author_dashboard(kwargs):
 
 def get_user_followed_authorIds(user_id):
     try:
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
         sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING'""".format(user_id)
         cursor.execute(sql)
@@ -477,7 +477,7 @@ def get_user_feed(user_id, offset, language):
     try:
         limit = 200
         loop_count = 0
-        conn = connectdb()
+        conn = connectdb_replica()
         user_following_author_list = []
         pratilipi_published_list = []
         pratilipi_rated_list = []
@@ -640,7 +640,7 @@ def get_top_authors(language):
 
 def get_most_active_authors_list(language, time_delay, offset):
     try:
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
 
         day2 = (datetime.now()).strftime("%Y-%m-%d")
