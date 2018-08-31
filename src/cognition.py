@@ -459,7 +459,7 @@ def get_author_dashboard(kwargs):
 
 def get_user_followed_authorIds(user_id):
     try:
-        conn = connectdb_replica()
+        conn = connectdb()
         cursor = conn.cursor()
         sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING'""".format(user_id)
         cursor.execute(sql)
