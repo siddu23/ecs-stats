@@ -149,9 +149,6 @@ def for_author_dashboard(kwargs):
                }
         response['highestReadCountPratilipi'].append(temp)
         highest_rating = float(highest_rating) + float(temp['avgRating'])
-        print "rating most_read - {}".format(temp['avgRating']) 
-        print "rating most_read highest_rating - {}".format(highest_rating) 
-    print "summed up most_read rating - {}".format(highest_rating)
 
     for pratilipi in kwargs['highest_engaged']:
         pid = pratilipi['id']
@@ -171,12 +168,6 @@ def for_author_dashboard(kwargs):
                }
         response['highestReviewedPratilipi'].append(temp)
         highest_rating = float(highest_rating) + float(temp['avgRating'])
-        print "rating highest_engaged - {}".format(temp['avgRating']) 
-        print "rating highest_engaged highest_rating - {}".format(highest_rating)
-    print "summed up highest_engaged rating - {}".format(highest_rating)
-
-    print "len most_read - {}".format(len(response['highestReadCountPratilipi']))
-    print "len highest_engaged - {}".format(len(response['highestReviewedPratilipi']))
 
     response['total']['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
     return json.dumps(response)
