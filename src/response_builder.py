@@ -148,7 +148,7 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReadCountPratilipi'].append(temp)
-        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        highest_rating = float(highest_rating) + float(temp['avgRating'])
         print "rating most_read - {}".format(temp['avgRating']) 
         print "rating most_read highest_rating - {}".format(highest_rating) 
     print "summed up most_read rating - {}".format(highest_rating)
@@ -170,7 +170,7 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReviewedPratilipi'].append(temp)
-        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        highest_rating = float(highest_rating) + float(temp['avgRating'])
         print "rating highest_engaged - {}".format(temp['avgRating']) 
         print "rating highest_engaged highest_rating - {}".format(highest_rating)
     print "summed up highest_engaged rating - {}".format(highest_rating)
