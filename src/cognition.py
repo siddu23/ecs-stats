@@ -476,60 +476,60 @@ def get_user_followed_authorIds(user_id):
 def get_user_feed(user_id, offset, language):
     try:
         limit = 200
-        loop_count = 0
-        conn = connectdb_replica()
-        user_following_author_list = []
-        pratilipi_published_list = []
-        pratilipi_rated_list = []
+        conn = connectdb()
+        cursor = conn.cursor()
         user_following_author_list = get_user_following(user_id, limit, conn)
-        block_pratilipi_calls = False
-        block_rated_pratilipi_calls = False
         print(user_following_author_list)
+
         if len(user_following_author_list) > 0:
-            while len(pratilipi_published_list) + len(pratilipi_rated_list) < 10:
+            author_ids = ",".join([str(x) for x in user_following_author_list])
 
-                if block_rated_pratilipi_calls and block_pratilipi_calls:
-                    break
+            sql = """SELECT * FROM experiment.user_activity 
+            WHERE author_id in ({}) order by activity_performed_at desc limit 10 offset {}""".format(author_ids, offset)
 
-                if len(user_following_author_list) > 0:
-                    user_following_user_id_list = get_user_id_list_from_athor_ids(user_following_author_list, conn)
+            print(sql)
+            cursor.execute(sql)
+            record_set = cursor.fetchall()
 
-                    pratilipis = []
-                    rated_pratilipi = []
+            offset = offset + 20
+            return record_set, offset
+        else:
+            def_feed = get_default_from_redis(offset/10, language)
+            if def_feed is None:
+                def_feed = get_default_feed(offset/10, conn, language)
+                add_data_to_redis(offset/10, language, def_feed)
 
-                    pratilipis = get_recent_pratilipis_published_by_authors(user_following_author_list, offset, conn)
-                    pratilipi_published_list.extend(pratilipis)
-
-                    if len(pratilipis) == 0:
-                        block_pratilipi_calls = True
-
-                    rated_pratilipi = get_recent_pratilipis_rated_by_authors(user_following_user_id_list, offset, conn)
-                    pratilipi_rated_list.extend(rated_pratilipi)
-
-                    if len(rated_pratilipi) == 0:
-                        block_rated_pratilipi_calls = True
-
-                loop_count = loop_count + 1
-                offset = offset + 1
-
-        if len(pratilipi_published_list) + len(pratilipi_rated_list) == 0:
-            pratilipi_published_list.extend(get_default_feed(offset, conn, language))
-            offset = offset + 1
-
-        pratilipi_published_list.extend(pratilipi_rated_list)
-        pratilipi_published_list = pratilipi_published_list[:30]
-
-        obj_list = [Pratilipi() for i in range(len(pratilipi_published_list))]
-        for indx, row in enumerate(pratilipi_published_list):
-            for name in row:
-                setattr(obj_list[indx], name, row[name])
-
-        return obj_list, offset
+            return def_feed, offset + 10
     except Exception as err:
-        raise FeedNotFound
+        raise err
     finally:
         disconnectdb(conn)
 
+
+def get_default_from_redis(day, language):
+    try:
+        conn = connect_redis()
+        name = "FEED_GENERIC_{}".format(day)
+        feed_data = conn.hget(name, language)
+        response = None
+        if feed_data:
+            response = json.loads(feed_data)
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return response
+
+def add_data_to_redis(day, language, value):
+    try:
+        conn = connect_redis()
+        name = "FEED_GENERIC_{}".format(day)
+        conn.hset(name, language, json.dumps(value))
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
 
 def get_default_feed(time_delay, conn, language):
     pratilipis = []
@@ -538,7 +538,7 @@ def get_default_feed(time_delay, conn, language):
         day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
         time_delay = time_delay + 1
         day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT *, True as is_default  FROM pratilipi.pratilipi
+        sql = """SELECT id as activity_reference_id, user_id, author_id, 'PUBLISHED' as activity_type FROM pratilipi.pratilipi
         WHERE state='PUBLISHED' and language='{}' and published_at > '{}' and published_at < '{}'
         order by read_count desc limit 10""".format(language, day2, day1)
         print(sql)
@@ -597,6 +597,29 @@ def get_recent_pratilipis_published_by_authors(author_list, time_delay, conn):
         raise DbSelectError(err)
 
     return pratilipis
+
+def get_pratilipis(pratilipi_id_list):
+    pratilipis = []
+
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql = """SELECT * FROM pratilipi.pratilipi 
+        WHERE id in ({}) 
+        AND state='PUBLISHED' 
+        AND NOT content_type = 'AUDIO'
+         """.format(pratilipi_id_list)
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        for i in record_set:
+            pratilipis.append(i)
+    except Exception as err:
+        raise DbSelectError(err)
+
+    return pratilipis
+
 
 def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
     pratilipis = []
