@@ -57,7 +57,7 @@ def get_ratings(pratilipi_ids):
         conn = connectdb()
         cursor = conn.cursor()
 
-        sql = """SELECT reference_id as id, AVG(rating) as avg_rating
+        sql = """SELECT reference_id as id, AVG(rating) as avg_rating, date_created
                  FROM social.review
                  WHERE reference_type = 'PRATILIPI'
                  AND state = 'PUBLISHED'
@@ -75,6 +75,26 @@ def get_ratings(pratilipi_ids):
         for name in row:
             setattr(obj_list[indx], name, row[name])
     return obj_list
+
+def get_user_ratings(user_id, pratilipi_ids):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql = """SELECT reference_id as id, rating, date_created
+                 FROM social.review
+                 WHERE reference_type = 'PRATILIPI'
+                 AND user_id = {}
+                 AND state = 'PUBLISHED'
+                 AND reference_id IN ({})""".format(user_id, pratilipi_ids)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    return record_set
 
 def get_authors(author_ids):
     try:
@@ -478,18 +498,23 @@ def get_user_feed(user_id, offset, language):
         limit = 200
         conn = connectdb()
         cursor = conn.cursor()
-        user_following_author_list = get_user_following(user_id, limit, conn)
-        print(user_following_author_list)
+        user_following_author_id_list, user_following_user_id_list = get_user_following(user_id, limit, conn)
+        print(user_following_author_id_list, user_following_user_id_list)
 
-        if len(user_following_author_list) > 0:
-            author_ids = ",".join([str(x) for x in user_following_author_list])
+        if len(user_following_author_id_list) > 0:
+            author_ids = ",".join(user_following_author_id_list)
+            author_user_ids = ",".join(user_following_user_id_list)
 
             sql = """SELECT * FROM experiment.user_activity 
-            WHERE author_id in ({}) order by activity_performed_at desc limit 10 offset {}""".format(author_ids, offset)
-
+                WHERE (author_id IN ({}) 
+                AND activity_type = 'PUBLISHED' )
+                OR (activity_initiated_by IN ({}) 
+                AND activity_type = 'RATED' ) ORDER BY activity_performed_at DESC LIMIT 20 OFFSET {};
+            """.format(author_ids, author_user_ids, offset)
             print(sql)
             cursor.execute(sql)
             record_set = cursor.fetchall()
+
 
             offset = offset + 20
             return record_set, offset
@@ -554,17 +579,20 @@ def get_default_feed(time_delay, conn, language):
 
 def get_user_following(user_id, limit, conn):
     author_ids = []
+    author_user_ids = []
     try:
         cursor = conn.cursor()
-        sql = """SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}""".format(user_id, limit)
+        sql = """SELECT user_id, id as author_id FROM author.author as a
+         JOIN (SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}) as f on a.id = f.reference_id""".format(user_id, limit)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
-            author_ids.append(int(i['reference_id']))
+            author_ids.append(str(i['author_id']))
+            author_user_ids.append(str(i['user_id']))
     except Exception as err:
         raise DbSelectError(err)
 
-    return author_ids
+    return author_ids, author_user_ids
 
 def get_user_id_list_from_athor_ids(author_id_list, conn):
     user_ids = []
