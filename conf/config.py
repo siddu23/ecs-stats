@@ -8,6 +8,12 @@ DB = {'name': 'pratilipi',
       'user': os.environ.get('MASTER_MYSQL_DB_USERNAME'),
       'pass': os.environ.get('MASTER_MYSQL_DB_PASSWORD')}
 
+DB_REPLICA = {'name': 'pratilipi',
+      'host': os.environ.get('MASTER_MYSQL_DB_HOST_RO'),
+      'port': os.environ.get('MASTER_DB_PORT'),
+      'user': os.environ.get('MASTER_MYSQL_DB_USERNAME'),
+      'pass': os.environ.get('MASTER_MYSQL_DB_PASSWORD')}
+
 REDIS = {'db': os.environ.get('MASTER_REDIS_DB'),
          'host': os.environ.get('MASTER_REDIS_ENDPOINT'),
          'port': os.environ.get('MASTER_REDIS_PORT')}

@@ -13,6 +13,8 @@ from conf import author_recommend_one
 from conf import author_recommend_two
 from conf import author_recommend_three
 
+# application level caching
+
 @hook('after_request')
 def set_content_type():
     """set response content type"""
@@ -50,6 +52,12 @@ def _object_to_dict(obj):
     obj_dict = {}
     for i in obj:
         obj_dict[i.id] = i.__dict__
+    return obj_dict
+
+def _dict_to_dict(obj):
+    obj_dict = {}
+    for i in obj:
+        obj_dict[i['id']] = i
     return obj_dict
 
 @timeit
@@ -358,25 +366,32 @@ def get_user_feed(**kwargs):
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'HINDI'
         feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset, language)
 
-        if len(feed_pratilipi_list) == 0:
-            raise FeedNotFound
+        response = {}
+        response['finished'] = True
+        response['feedList'] = []
+        response['offset'] = 0
 
-        # get authors related to pratilipis
-        author_ids = _join_authorids(feed_pratilipi_list)
-        authors = cognition.get_authors(author_ids)
-        author_dict = _object_to_dict(authors)
+        if len(feed_pratilipi_list) != 0:
+            pratilipi_ids = ",".join([str(x['activity_reference_id']) for x in feed_pratilipi_list])
+            pratilipis = cognition.get_pratilipis(pratilipi_ids)
+            pratilipi_dict = _dict_to_dict(pratilipis)
 
-        # get ratings related to pratilipis
-        pratilipi_ids = _join_pratilipiids(feed_pratilipi_list)
-        ratings = cognition.get_ratings(pratilipi_ids)
-        rating_dict = _object_to_dict(ratings)
+            # get authors related to pratilipis
+            author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
+            authors = cognition.get_authors(author_ids)
+            author_dict = _object_to_dict(authors)
 
-        response_kwargs = {'pratilipis': feed_pratilipi_list,
-                           'authors': author_dict,
-                           'ratings': rating_dict,
-                           'offset': offset,
-                           'language': language}
-        response = response_builder.for_user_feed(response_kwargs)
+            # get ratings related to pratilipis
+            ratings = cognition.get_ratings(pratilipi_ids)
+            rating_dict = _object_to_dict(ratings)
+
+            response_kwargs = {'feed_pratilipi_list' : feed_pratilipi_list,
+                               'pratilipis': pratilipi_dict,
+                               'authors': author_dict,
+                               'ratings': rating_dict,
+                               'offset': offset,
+                               'language': language}
+            response = response_builder.for_user_feed(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:

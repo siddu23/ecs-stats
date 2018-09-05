@@ -148,7 +148,7 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReadCountPratilipi'].append(temp)
-        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        highest_rating = float(highest_rating) + float(temp['avgRating'])
 
     for pratilipi in kwargs['highest_engaged']:
         pid = pratilipi['id']
@@ -167,7 +167,7 @@ def for_author_dashboard(kwargs):
                  'reviewCount': review,
                }
         response['highestReviewedPratilipi'].append(temp)
-        highest_rating = int(highest_rating) + int(temp['avgRating'])
+        highest_rating = float(highest_rating) + float(temp['avgRating'])
 
     response['total']['highestRating'] = "{0:.2f}".format(highest_rating/(len(response['highestReviewedPratilipi']) + len(response['highestReadCountPratilipi'])))
     return json.dumps(response)
@@ -213,69 +213,72 @@ def for_user_feed(kwargs):
     pratilipis = kwargs['pratilipis']
     authors = kwargs['authors']
     ratings = kwargs['ratings']
-    response_dict = { "feedList" : []}
-    for pratilipi in pratilipis:
-        rating = ratings[str(pratilipi.id)]['avg_rating'] if str(pratilipi.id) in ratings else 0
-        author = authors[pratilipi.author_id]
-        response_object = {}
-        response_pratilipi = {}
-        response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi.id)
-        response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi.title)
-        response_pratilipi = _set_key(response_pratilipi, 'titleEn', pratilipi.title_en)
-        response_pratilipi = _set_key(response_pratilipi, 'displayTitle', pratilipi.title if pratilipi.title != '' else pratilipi.title_en)
-        response_pratilipi = _set_key(response_pratilipi, 'authorId', pratilipi.author_id)
-        response_pratilipi = _set_key(response_pratilipi, 'readPageUrl', "/read?id=" + str(pratilipi.id))
-        response_pratilipi = _set_key(response_pratilipi, 'writePageUrl', "/pratilipi-write/?id=" + str(pratilipi.id))
+    feed_list = kwargs['feed_pratilipi_list']
+    response_dict = { "feedList":[]}
 
-        pratilipi_slug = pratilipi.slug if pratilipi.slug != '' else pratilipi.slug_en
-        response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi.slug_id))
+    for feed in feed_list:
+        if feed['activity_reference_id'] in pratilipis:
+            pratilipi = pratilipis[feed['activity_reference_id']]
+            rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
+            author = authors[pratilipi['author_id']]
+            response_object = {}
+            response_pratilipi = {}
+            response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
+            response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi['title'])
+            response_pratilipi = _set_key(response_pratilipi, 'titleEn', pratilipi['title_en'])
+            response_pratilipi = _set_key(response_pratilipi, 'displayTitle', pratilipi['title'] if pratilipi['title'] != '' else pratilipi['title_en'])
+            response_pratilipi = _set_key(response_pratilipi, 'authorId', pratilipi['author_id'])
+            response_pratilipi = _set_key(response_pratilipi, 'readPageUrl', "/read?id=" + str(pratilipi['id']))
+            response_pratilipi = _set_key(response_pratilipi, 'writePageUrl', "/pratilipi-write/?id=" + str(pratilipi['id']))
 
-        response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi.type)
-        response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi.content_type)
-        response_pratilipi = _set_key(response_pratilipi, 'summary', pratilipi.summary if pratilipi.summary is not None else "")
-        response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi.state)
-        response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi.reading_time)
-        response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi.read_count)
-        response_pratilipi = _set_key(response_pratilipi, 'lastUpdatedDateMillis', int(pratilipi.updated_at.strftime("%s")) * 1000)
-        response_pratilipi = _set_key(response_pratilipi, 'listingDateMillis', int(pratilipi.created_at.strftime("%s")) * 1000)
-        response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi.id, pratilipi.cover_image))
-        response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
+            pratilipi_slug = pratilipi['slug'] if pratilipi['slug'] != '' else pratilipi['slug_en']
+            response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
 
-        data = {}
-        data['authorId'] = author['id']
-        data['displayName'] = _author_name(author)
-        data['pageUrl'] = _author_slug_details(author)
-        data['contentPublished'] = author['content_published']
-        data['totalReadCount'] = author['total_read_count']
-        data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
-        data['slug'] = _author_slug_details(author)
+            response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi['type'])
+            response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi['content_type'])
+            response_pratilipi = _set_key(response_pratilipi, 'summary', pratilipi['summary'] if pratilipi['summary'] is not None else "")
+            response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi['state'])
+            response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi['reading_time'])
+            response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi['read_count'])
+            response_pratilipi = _set_key(response_pratilipi, 'lastUpdatedDateMillis', int(pratilipi['updated_at'].strftime("%s")) * 1000)
+            response_pratilipi = _set_key(response_pratilipi, 'listingDateMillis', int(pratilipi['created_at'].strftime("%s")) * 1000)
+            response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi['id'], pratilipi['cover_image']))
+            response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
 
-
-        if hasattr(pratilipi, 'user_rating'):
-            response_object = _set_key(response_object, 'feedCreated',
-                                       int(pratilipi.rating_created.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(pratilipi.user_rating)))
-            response_object = _set_key(response_object, 'feedType', 'RATING')
-        elif hasattr(pratilipi, 'is_default'):
-            response_object = _set_key(response_object, 'feedCreated',
-                                       int(pratilipi.published_at.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'feedType', 'GENERIC')
-            author_name = data['displayName']
-            story_name = pratilipi.title if pratilipi.title != '' else pratilipi.title_en
-            message = translations.translations[kwargs['language']]['publish'].format(author_name = author_name, story_name = story_name)
-            # '%(last)s, %(first)s %(last)s' % {'first': "James", 'last': "Bond"}
-            response_object = _set_key(response_object, 'feedMessage', message)
-        else:
-            response_object = _set_key(response_object, 'feedCreated',
-                                       int(pratilipi.published_at.strftime("%s")) * 1000)
-            response_object = _set_key(response_object, 'feedType', 'PUBLISH')
+            data = {}
+            data['authorId'] = author['id']
+            data['displayName'] = _author_name(author)
+            data['pageUrl'] = _author_slug_details(author)
+            data['contentPublished'] = author['content_published']
+            data['totalReadCount'] = author['total_read_count']
+            data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
+            data['slug'] = _author_slug_details(author)
 
 
-        response_pratilipi = _set_key(response_pratilipi, 'author', data)
-        response_object['pratilipi'] = response_pratilipi
-        response_dict['feedList'].append(response_object)
+            if feed['activity_type'] == 'RATED':
+                response_object = _set_key(response_object, 'feedCreated',
+                                           int(feed['activity_performed_at'].strftime("%s")) * 1000)
+                response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(feed['activity_value'])))
+                response_object = _set_key(response_object, 'feedType', 'RATING')
+            elif feed['activity_type'] == 'GENERIC':
+                response_object = _set_key(response_object, 'feedCreated',
+                                           int(pratilipi['published_at'].strftime("%s")) * 1000)
+                response_object = _set_key(response_object, 'feedType', 'GENERIC')
+                author_name = data['displayName']
+                story_name = pratilipi['title'] if pratilipi['title'] != '' else pratilipi['title_en']
+                message = translations.translations[kwargs['language']]['publish'].format(author_name = author_name, story_name = story_name)
+                response_object = _set_key(response_object, 'feedMessage', message)
+            else:
+                response_object = _set_key(response_object, 'feedCreated',
+                                           int(pratilipi['published_at'].strftime("%s")) * 1000)
+                response_object = _set_key(response_object, 'feedType', 'PUBLISH')
 
-    if kwargs['offset'] < 30 :
+
+            response_pratilipi = _set_key(response_pratilipi, 'author', data)
+            response_object['pratilipi'] = response_pratilipi
+            response_dict['feedList'].append(response_object)
+
+    if kwargs['offset'] < 80 and len(feed_list) != 0:
         response_dict['finished'] = False
     else:
         response_dict['finished'] = True
