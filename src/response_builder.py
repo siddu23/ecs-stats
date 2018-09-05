@@ -323,9 +323,9 @@ def for_reader_score(kwargs):
 def for_reader_dashboard(kwargs):
     """reader dasboard"""
     response = {}
-    response = _set_key(response, 'word_count', int(kwargs['word_count']))
-    response = _set_key(response, 'only_reviews', int(kwargs['only_reviews']))
-    response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']))
-    response = _set_key(response, 'following_count', int(kwargs['following_count']))
+    response = _set_key(response, 'word_count', int(kwargs['word_count']) if kwargs['word_count'] != None else 0)
+    response = _set_key(response, 'only_reviews', int(kwargs['only_reviews']) if kwargs['only_reviews'] != None else 0)
+    response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']) if kwargs['rate_and_review'] != None else 0)
+    response = _set_key(response, 'following_count', int(kwargs['following_count']) if kwargs['following_count'] != None else 0)
     response = _set_key(response, 'read_categories', kwargs['read_categories'])
     return json.dumps(response)
