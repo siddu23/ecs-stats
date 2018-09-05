@@ -697,17 +697,17 @@ def get_top_authors(language):
 
 
 
-def get_most_active_authors_list(language, time_delay, offset):
+def get_most_active_authors_list(language, offset):
     try:
         conn = connectdb()
         cursor = conn.cursor()
 
         day2 = (datetime.now()).strftime("%Y-%m-%d")
-        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
+        day1 = (datetime.now() + timedelta(days=-7)).strftime("%Y-%m-%d")
 
         sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi
             where language='{}' AND state='PUBLISHED' AND reading_time > 60 AND published_at > '{}' AND published_at < '{}'
-            group by author_id order by rank desc limit 20 offset {}""".format(language, day1, day2, offset)
+            group by author_id order by rank desc limit 20""".format(language, day1, day2)
 
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -720,6 +720,21 @@ def get_most_active_authors_list(language, time_delay, offset):
     finally:
         disconnectdb(conn)
     return author_ids
+
+# def get_most_active_authors_list(language, offset):
+#     try:
+#         conn = connect_redis()
+#         name = "MOST_ACTIVE"
+#         feed_data = conn.hget(name, language)
+#         response = []
+#         if feed_data:
+#             response = json.loads(feed_data)
+#     except Exception as err:
+#         raise RedisConnectionError(err)
+#     finally:
+#         disconnect_redis(conn)
+#
+#     return response
 
 def get_reader_score(kwargs):
     """get reader score"""
