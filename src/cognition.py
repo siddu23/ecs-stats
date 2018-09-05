@@ -955,7 +955,7 @@ def get_reader_dashboard_stats(user_id):
         category_data = cursor.fetchall()
         read_categories = []
 
-        for i in read_set:
+        for i in category_data:
             category_data = {}
             category_data['frequency'] = i['frequency']
             category_data['category_id'] = i['category_id']
