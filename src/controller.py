@@ -422,12 +422,12 @@ def get_most_active_authors(**kwargs):
                 if len(ids) == 0:
                     break
 
-                all_ids.extend(ids)
-                user_followed_authors = cognition.get_user_followed_authorIds(user_id)
-                offset = offset + len(ids)
-                for _id in user_followed_authors:
-                    if int(_id) in all_ids:
-                        del all_ids[all_ids.index(int(_id))]
+                # all_ids.extend(ids)
+                # user_followed_authors = cognition.get_user_followed_authorIds(user_id)
+                # offset = offset + len(ids)
+                # for _id in user_followed_authors:
+                #     if int(_id) in all_ids:
+                #         del all_ids[all_ids.index(int(_id))]
         else:
             return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
 
