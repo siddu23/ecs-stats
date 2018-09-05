@@ -557,6 +557,8 @@ def add_data_to_redis(day, language, value):
         conn = connect_redis()
         name = "FEED_GENERIC_{}".format(day)
         conn.hset(name, language, json.dumps(value))
+        ttl = datetime.today() + timedelta(hours=12)
+        conn.expireat(name=name, when=ttl)
     except Exception as err:
         raise RedisConnectionError(err)
     finally:

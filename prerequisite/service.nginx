@@ -12,7 +12,7 @@ server {
 
     location /stats/v1.0/most_active {
         proxy_pass http://unix:/service/service.sock;
-        proxy_cache_valid 200 60m;
+        proxy_cache_valid 200 1400m;
     }
 
     location /stats/v1.0/recent_published {
