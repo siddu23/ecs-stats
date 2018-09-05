@@ -4,6 +4,8 @@ import pymysql.cursors
 
 from os import environ, path
 sys.path.append( path.dirname( path.abspath(__file__) ) )
+import __builtin__
+from conf.config import DB_REPLICA
 
 from gevent import monkey
 monkey.patch_all(thread=False, socket=False)
@@ -32,3 +34,20 @@ umask = '007'
 accesslog = None
 errorlog = '-'
 syslog = True
+
+def post_fork(server, worker):
+    # Connect to the database
+    connection = pymysql.connect(host=DB_REPLICA['host'],
+                                 user=DB_REPLICA['user'],
+                                 password=DB_REPLICA['pass'],
+                                 db='author',
+                                 autocommit=True,
+                                 connect_timeout=86400,
+                                 charset='utf8mb4',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    __builtin__.CONN_RO = connection
+    print "gunicorn worker conneted to db"
+
+def worker_exit(server, worker):
+    __builtin__.CONN_RO.close()
+    print "gunicorn worker db connection closed"
