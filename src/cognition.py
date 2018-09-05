@@ -773,7 +773,7 @@ def get_continue_reading(kwargs):
     """get continue reading"""
     try:
         # TODO - optimize later; each request conn happens
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
 
         # fetch data
