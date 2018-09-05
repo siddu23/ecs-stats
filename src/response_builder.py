@@ -328,4 +328,4 @@ def for_reader_dashboard(kwargs):
     response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']))
     response = _set_key(response, 'following_count', int(kwargs['following_count']))
     response = _set_key(response, 'read_categories', kwargs['read_categories'])
-    return json.dumps(kwargs)
+    return json.dumps(response)
