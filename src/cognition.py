@@ -699,7 +699,7 @@ def get_top_authors(language):
 
 def get_most_active_authors_list(language, time_delay, offset):
     try:
-        conn = connectdb_replica()
+        conn = connectdb()
         cursor = conn.cursor()
 
         day2 = (datetime.now()).strftime("%Y-%m-%d")
