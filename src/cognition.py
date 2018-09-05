@@ -1,9 +1,11 @@
+import __builtin__
+import json
+
+from itertools import islice
+from model import *
 from exceptions import *
 from dbutil import *
 from redisutil import *
-from model import *
-from itertools import islice
-import json
 
 def health():
     result = {"state": "healthy"}
@@ -772,8 +774,7 @@ def get_reader_score(kwargs):
 def get_continue_reading(kwargs):
     """get continue reading"""
     try:
-        # TODO - optimize later; each request conn happens
-        conn = connectdb_replica()
+        conn = __builtin__.CONN_RO
         cursor = conn.cursor()
 
         # fetch data
@@ -849,7 +850,7 @@ def get_continue_reading(kwargs):
     except Exception as err:
         raise DbSelectError(err)
     finally:
-        disconnectdb(conn)
+        cursor.close()
 
     # apply avg_rating filter
     rating_list = []
