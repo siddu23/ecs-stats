@@ -519,8 +519,12 @@ def get_user_feed(user_id, offset, language):
             offset = offset + 20
             return record_set, offset
         else:
+
+            if offset/10 > 8:
+                return [], 90
+
             def_feed = get_default_from_redis(offset/10, language)
-            if def_feed is None:
+            if len(def_feed) == 0:
                 def_feed = get_default_feed(offset/10, conn, language)
                 add_data_to_redis(offset/10, language, def_feed)
 
@@ -536,7 +540,7 @@ def get_default_from_redis(day, language):
         conn = connect_redis()
         name = "FEED_GENERIC_{}".format(day)
         feed_data = conn.hget(name, language)
-        response = None
+        response = []
         if feed_data:
             response = json.loads(feed_data)
     except Exception as err:

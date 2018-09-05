@@ -367,29 +367,32 @@ def get_user_feed(**kwargs):
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'HINDI'
         feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset, language)
 
-        if len(feed_pratilipi_list) == 0:
-            raise FeedNotFound
+        response = {}
+        response['finished'] = True
+        response['feedList'] = []
+        response['offset'] = 0
 
-        pratilipi_ids = ",".join([str(x['activity_reference_id']) for x in feed_pratilipi_list])
-        pratilipis = cognition.get_pratilipis(pratilipi_ids)
-        pratilipi_dict = _dict_to_dict(pratilipis)
+        if len(feed_pratilipi_list) != 0:
+            pratilipi_ids = ",".join([str(x['activity_reference_id']) for x in feed_pratilipi_list])
+            pratilipis = cognition.get_pratilipis(pratilipi_ids)
+            pratilipi_dict = _dict_to_dict(pratilipis)
 
-        # get authors related to pratilipis
-        author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
-        authors = cognition.get_authors(author_ids)
-        author_dict = _object_to_dict(authors)
+            # get authors related to pratilipis
+            author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
+            authors = cognition.get_authors(author_ids)
+            author_dict = _object_to_dict(authors)
 
-        # get ratings related to pratilipis
-        ratings = cognition.get_ratings(pratilipi_ids)
-        rating_dict = _object_to_dict(ratings)
+            # get ratings related to pratilipis
+            ratings = cognition.get_ratings(pratilipi_ids)
+            rating_dict = _object_to_dict(ratings)
 
-        response_kwargs = {'feed_pratilipi_list' : feed_pratilipi_list,
-                           'pratilipis': pratilipi_dict,
-                           'authors': author_dict,
-                           'ratings': rating_dict,
-                           'offset': offset,
-                           'language': language}
-        response = response_builder.for_user_feed(response_kwargs)
+            response_kwargs = {'feed_pratilipi_list' : feed_pratilipi_list,
+                               'pratilipis': pratilipi_dict,
+                               'authors': author_dict,
+                               'ratings': rating_dict,
+                               'offset': offset,
+                               'language': language}
+            response = response_builder.for_user_feed(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
