@@ -507,10 +507,10 @@ def get_user_feed(user_id, offset, language):
             author_ids = ",".join(user_following_author_id_list)
             author_user_ids = ",".join(user_following_user_id_list)
 
-            sql = """SELECT * FROM experiment.user_activity 
-                WHERE (author_id IN ({}) 
+            sql = """SELECT * FROM experiment.user_activity
+                WHERE (author_id IN ({})
                 AND activity_type = 'PUBLISHED' )
-                OR (activity_initiated_by IN ({}) 
+                OR (activity_initiated_by IN ({})
                 AND activity_type = 'RATED' ) ORDER BY activity_performed_at DESC LIMIT 20 OFFSET {};
             """.format(author_ids, author_user_ids, offset)
             print(sql)
@@ -639,9 +639,9 @@ def get_pratilipis(pratilipi_id_list):
         conn = connectdb()
         cursor = conn.cursor()
 
-        sql = """SELECT * FROM pratilipi.pratilipi 
-        WHERE id in ({}) 
-        AND state='PUBLISHED' 
+        sql = """SELECT * FROM pratilipi.pratilipi
+        WHERE id in ({})
+        AND state='PUBLISHED'
         AND NOT content_type = 'AUDIO'
          """.format(pratilipi_id_list)
         print(sql)
@@ -925,7 +925,7 @@ def get_reader_dashboard_stats(user_id):
                         (SELECT
                             COUNT(DISTINCT id) AS following_count
                             FROM    follow.follow
-                            WHERE user_id={} AND state = 'FOLLOWING') as following_stats;""".format(user_id)
+                            WHERE user_id={} AND state = 'FOLLOWING') as following_stats;""".format(user_id, user_id, user_id)
 
         cursor.execute(sql_for_basic_stats)
         record_set = cursor.fetchall()
