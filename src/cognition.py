@@ -699,7 +699,7 @@ def get_top_authors(language):
 
 def get_most_active_authors_list(language, offset):
     try:
-        conn = connectdb()
+        conn = __builtin__.CONN_RO
         cursor = conn.cursor()
 
         day2 = (datetime.now()).strftime("%Y-%m-%d")
@@ -718,7 +718,8 @@ def get_most_active_authors_list(language, offset):
     except Exception as err:
         raise DbSelectError(err)
     finally:
-        disconnectdb(conn)
+        cursor.close()
+
     return author_ids
 
 # def get_most_active_authors_list(language, offset):
