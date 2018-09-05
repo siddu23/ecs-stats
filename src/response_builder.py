@@ -316,3 +316,13 @@ def for_reader_score(kwargs):
     if kwargs['no_of_books_read'] is not None: response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
     if kwargs['tier'] is not None: response = _set_key(response, 'tier', kwargs['tier'])
     return json.dumps(response)
+
+def for_reader_dashboard(kwargs):
+    """reader dasboard"""
+    response = {}
+    response = _set_key(response, 'word_count', kwargs['word_count'])
+    response = _set_key(response, 'only_reviews', kwargs['only_reviews'])
+    response = _set_key(response, 'reviews_and_rating', kwargs['reviews_and_rating'])
+    response = _set_key(response, 'following_count', kwargs['following_count'])
+    response = _set_key(response, 'read_categories', kwargs['read_categories'])
+    return json.dumps(kwargs)

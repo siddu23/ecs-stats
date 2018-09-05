@@ -329,7 +329,6 @@ def get_top_authors(**kwargs):
     """ Top authors """
     try:
         # query param
-        print kwargs
         kwargs = transform_request(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
 
@@ -505,6 +504,26 @@ def get_continue_reading(**kwargs):
         return bottle.HTTPResponse(status=404)
     except NoDataFound as err:
         return bottle.HTTPResponse(status=404, body=str(err))
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+@timeit
+@request_parser
+def get_reader_dashboard(**kwargs):
+    """ Reader dashboard statistics """
+    try:
+        # query param
+        kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
+
+        # validate request
+        validate_reader_dashboard_request(kwargs)
+
+        stats = cognition.get_reader_dashboard_stats(kwargs['user_id'])
+        response = response_builder.for_reader_dashboard(stats)
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})

@@ -845,3 +845,71 @@ def get_continue_reading(kwargs):
         for name in row:
             setattr(obj_list[indx], name, row[name])
     return obj_list, total_pratilipis
+
+def get_reader_dashboard_stats(user_id):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql_for_basic_stats = """ SELECT
+                    read_stats.word_count as word_count,
+                    review_stats.only_review as only_reviews,
+                    review_stats.rate_and_review as rate_and_review,
+                    following_stats.following_count as following_count
+                    FROM
+                        (SELECT
+                            SUM(property_value) as word_count
+                            FROM user_pratilipi.user_pratilipi
+                            WHERE property = 'READ_WORD_COUNT' AND user_id = {}) as read_stats,
+                        (SELECT
+                            SUM(CASE WHEN review != "" THEN 1 ELSE 0 END) AS only_review,
+                            COUNT(DISTINCT id) AS rate_and_review
+                            FROM    social.review
+                            WHERE user_id={}) as review_stats,
+                        (SELECT
+                            COUNT(DISTINCT id) AS following_count
+                            FROM    follow.follow
+                            WHERE user_id={} AND state = 'FOLLOWING') as following_stats;""".format(user_id)
+
+        cursor.execute(sql_for_basic_stats)
+        record_set = cursor.fetchall()
+        if cursor.rowcount == 0: raise NoDataFound("No user found with the given id")
+
+        stats = {
+            'word_count': record_set[0]['word_count'],
+            'only_reviews': record_set[0]['only_reviews'],
+            'rate_and_review': record_set[0]['rate_and_review'],
+            'following_count': record_set[0]['following_count']
+        }
+
+        sql_for_reading_tags = """ SELECT COUNT(category_id) as frequency, category_id, categories.name as name
+                                    FROM pratilipi.pratilipis_categories
+                                	JOIN pratilipi.categories categories
+                                    ON categories.id = category_id
+                                    WHERE pratilipi_id IN
+                                		(SELECT DISTINCT pratilipi_id
+                                			FROM user_pratilipi.user_pratilipi
+                                			WHERE user_id = {})
+                                	GROUP BY category_id
+                                    ORDER BY COUNT(category_id) DESC;""".format(user_id)
+
+        cursor.execute(sql_for_reading_tags)
+        category_data = cursor.fetchall()
+        read_categories = []
+
+        for i in read_set:
+            category_data = {}
+            category_data['frequency'] = i['frequency']
+            category_data['category_id'] = i['category_id']
+            category_data['name'] = i['name']
+            read_categories.append(category_data)
+
+        stats['read_categories'] = read_categories
+
+    except NoDataFound as err:
+        raise NoDataFound(err)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+    return stats

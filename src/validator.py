@@ -46,3 +46,7 @@ def validate_top_authors_request(req):
 def validate_continue_reading_request(req):
     if req['user_id'] is None or req['user_id'] == 0:
         raise UserIdRequired
+
+def validate_reader_dashboard_request(req):
+    if req['user_id'] is None or req['user_id'] == 0:
+        raise UserIdRequired

@@ -19,6 +19,9 @@ def app_routes(app):
     # /stats/v1.0/author_dashboard?authorId=2
     app.route('/stats/v1.0/author_dashboard', ['GET', 'OPTIONS'], controller.get_author_dashboard)
 
+    # /stats/v1.0/reader_dashboard?userid=2
+    app.route('/stats/v1.0/reader_dashboard', ['GET', 'OPTIONS'], controller.get_reader_dashboard)
+
     # /stats/v1.0/top_authors
     app.route('/stats/v1.0/top_authors', ['GET', 'OPTIONS'], controller.get_top_authors)
 
