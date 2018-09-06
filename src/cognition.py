@@ -681,7 +681,7 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
 
     return pratilipis
 
-def get_top_authors(language):
+def get_top_authors(language, period):
     try:
         conn = connect_redis()
         author_data = conn.hget('ecsstats:top_authors', language)
@@ -962,7 +962,7 @@ def get_reader_dashboard_stats(user_id):
             category_data['name'] = i['name']
             read_categories.append(category_data)
 
-        stats['read_categories'] = read_categories
+        stats['read_categories'] = read_categories[:3]
 
     except NoDataFound as err:
         raise NoDataFound(err)
