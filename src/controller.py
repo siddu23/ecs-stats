@@ -339,12 +339,13 @@ def get_top_authors(**kwargs):
         # query param
         kwargs = transform_request(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        kwargs['period'] = int(kwargs['period']) if 'period' in kwargs else 7
 
         # validate request
         validate_top_authors_request(kwargs)
         language = kwargs['language'].upper()
 
-        authors = cognition.get_top_authors(language)
+        authors = cognition.get_top_authors(language, kwargs['period'])
         response = response_builder.for_top_authors({ 'authors': authors, 'logged_user_id': user_id })
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:

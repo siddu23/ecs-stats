@@ -1,5 +1,5 @@
 from exceptions import *
-from conf.config import LANGUAGE
+from conf.config import LANGUAGE, AVAILABLE_PERIODS
 
 
 def validate_request(req):
@@ -42,6 +42,9 @@ def validate_top_authors_request(req):
 
     if req['language'].lower() not in LANGUAGE:
         raise LanguageInvalid
+
+    if req['period'] not in AVAILABLE_PERIODS and req['period'] != None:
+        raise PeriodInvalid
 
 def validate_continue_reading_request(req):
     if req['user_id'] is None or req['user_id'] == 0:

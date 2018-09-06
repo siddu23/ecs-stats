@@ -83,3 +83,9 @@ class NoDataFound(Exception):
         self.message = 'no data found; {}'.format(err)
     def __str__(self):
         return str(self.message)
+
+class PeriodInvalid(Exception):
+    def __init__(self, err):
+        self.message = 'invalid period in request'
+    def __str__(self):
+        return str(self.message)
