@@ -229,6 +229,7 @@ def for_user_feed(kwargs):
             else:
                 author = authors[pratilipi['author_id']]
 
+
             response_object = {}
             response_pratilipi = {}
             response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
