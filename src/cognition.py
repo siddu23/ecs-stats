@@ -126,11 +126,25 @@ def get_authors_for_feed(author_ids, user_ids):
         conn = connectdb()
         cursor = conn.cursor()
 
-        sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
-                 d.content_published, d.total_read_count
-                 FROM author.author d
-                 WHERE d.id IN ({}) or d.user_id in ({})""".format(author_ids, user_ids)
+        if len(author_ids) > 0 and len(user_ids) > 0:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                     d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                     d.content_published, d.total_read_count
+                     FROM author.author d
+                     WHERE d.id IN ({}) or d.user_id in ({})""".format(author_ids, user_ids)
+        elif len(author_ids) > 0:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                                 d.content_published, d.total_read_count
+                                 FROM author.author d
+                                 WHERE d.id IN ({})""".format(author_ids)
+        else:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                                 d.content_published, d.total_read_count
+                                 FROM author.author d
+                                 d.user_id in ({})""".format(user_ids)
+
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
