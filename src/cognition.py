@@ -121,6 +121,29 @@ def get_authors(author_ids):
             setattr(obj_list[indx], name, row[name])
     return obj_list
 
+def get_authors_for_feed(author_ids, user_ids):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                 d.content_published, d.total_read_count
+                 FROM author.author d
+                 WHERE d.id IN ({}) or d.user_id in ({})""".format(author_ids, user_ids)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    obj_list = [ Author() for i in range(len(record_set)) ]
+    for indx, row in enumerate(record_set):
+        for name in row:
+            setattr(obj_list[indx], name, row[name])
+    return obj_list
+
 def get_recent_published(kwargs):
     """get recent published"""
     try:
@@ -590,12 +613,14 @@ def get_user_following(user_id, limit, conn):
     author_user_ids = []
     try:
         cursor = conn.cursor()
-        sql = """SELECT user_id, id as author_id FROM author.author as a
+        sql = """SELECT user_id, 
+         a.id
+         FROM author.author as a
          JOIN (SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}) as f on a.id = f.reference_id""".format(user_id, limit)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
-            author_ids.append(str(i['author_id']))
+            author_ids.append(str(i['id']))
             author_user_ids.append(str(i['user_id']))
     except Exception as err:
         raise DbSelectError(err)

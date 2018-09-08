@@ -378,8 +378,10 @@ def get_user_feed(**kwargs):
             pratilipi_dict = _dict_to_dict(pratilipis)
 
             # get authors related to pratilipis
-            author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
-            authors = cognition.get_authors(author_ids)
+            author_ids = ",".join([str(x['author_id']) for x in filter(lambda x: x['activity_type'] == 'PUBLISHED', feed_pratilipi_list)])
+            user_ids = ",".join([str(x['activity_initiated_by']) for x in filter(lambda x: x['activity_type'] == 'RATED', feed_pratilipi_list)])
+
+            authors = cognition.get_authors_for_feed(author_ids, user_ids)
             author_dict = _object_to_dict(authors)
 
             # get ratings related to pratilipis
