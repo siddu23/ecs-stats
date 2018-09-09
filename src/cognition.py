@@ -144,7 +144,7 @@ def get_authors_for_feed(author_ids, user_ids):
                                  d.content_published, d.total_read_count
                                  FROM author.author d
                                  d.user_id in ({})""".format(user_ids)
-
+        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
