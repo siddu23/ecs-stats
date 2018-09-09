@@ -143,8 +143,7 @@ def get_authors_for_feed(author_ids, user_ids):
                                  d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
                                  d.content_published, d.total_read_count
                                  FROM author.author d
-                                 d.user_id in ({})""".format(user_ids)
-        print(sql)
+                                 WHERE d.user_id in ({})""".format(user_ids)
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except Exception as err:
