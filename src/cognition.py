@@ -121,42 +121,6 @@ def get_authors(author_ids):
             setattr(obj_list[indx], name, row[name])
     return obj_list
 
-def get_authors_for_feed(author_ids, user_ids):
-    try:
-        conn = connectdb()
-        cursor = conn.cursor()
-
-        if len(author_ids) > 0 and len(user_ids) > 0:
-            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                     d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
-                     d.content_published, d.total_read_count
-                     FROM author.author d
-                     WHERE d.id IN ({}) or d.user_id in ({})""".format(author_ids, user_ids)
-        elif len(author_ids) > 0:
-            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
-                                 d.content_published, d.total_read_count
-                                 FROM author.author d
-                                 WHERE d.id IN ({})""".format(author_ids)
-        else:
-            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
-                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
-                                 d.content_published, d.total_read_count
-                                 FROM author.author d
-                                 WHERE d.user_id in ({})""".format(user_ids)
-        cursor.execute(sql)
-        record_set = cursor.fetchall()
-    except Exception as err:
-        raise DbSelectError(err)
-    finally:
-        disconnectdb(conn)
-
-    obj_list = [ Author() for i in range(len(record_set)) ]
-    for indx, row in enumerate(record_set):
-        for name in row:
-            setattr(obj_list[indx], name, row[name])
-    return obj_list
-
 def get_recent_published(kwargs):
     """get recent published"""
     try:
@@ -399,7 +363,7 @@ def get_author_dashboard(kwargs):
                  WHERE author_id = {}
                  AND state = "PUBLISHED"
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                 AND published_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
+                 AND metainfo_updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_content_published = recordset.get('content_published', 0)
@@ -626,14 +590,12 @@ def get_user_following(user_id, limit, conn):
     author_user_ids = []
     try:
         cursor = conn.cursor()
-        sql = """SELECT user_id, 
-         a.id
-         FROM author.author as a
+        sql = """SELECT user_id, id as author_id FROM author.author as a
          JOIN (SELECT reference_id FROM follow.follow WHERE user_id={} AND state='FOLLOWING' LIMIT {}) as f on a.id = f.reference_id""".format(user_id, limit)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
-            author_ids.append(str(i['id']))
+            author_ids.append(str(i['author_id']))
             author_user_ids.append(str(i['user_id']))
     except Exception as err:
         raise DbSelectError(err)
@@ -731,7 +693,7 @@ def get_top_authors(language, period):
     finally:
         disconnect_redis(conn)
 
-    return obj_list[:10]
+    return obj_list
 
 
 
