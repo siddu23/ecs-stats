@@ -301,6 +301,8 @@ def for_top_authors(kwargs):
     """top authors"""
     response_dict = {'authorList': []}
     authors = kwargs['authors']
+    print 'in response builder'
+    print authors
     logged_user_id = kwargs['logged_user_id']
     for author in authors:
         response = {}
