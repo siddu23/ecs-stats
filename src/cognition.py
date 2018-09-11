@@ -693,7 +693,7 @@ def get_top_authors(language, period):
     finally:
         disconnect_redis(conn)
 
-    return obj_list
+    return obj_list[:10]
 
 
 
