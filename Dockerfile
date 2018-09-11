@@ -1,5 +1,6 @@
 FROM 370531249777.dkr.ecr.ap-south-1.amazonaws.com/ubuntu-nginx-sql:2.0.0
 
+
 # set timezone
 RUN rm /etc/localtime
 RUN ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
