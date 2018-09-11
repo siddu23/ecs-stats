@@ -220,7 +220,16 @@ def for_user_feed(kwargs):
         if feed['activity_reference_id'] in pratilipis:
             pratilipi = pratilipis[feed['activity_reference_id']]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
+
+            # if feed['activity_type'] == 'RATED':
+            #     for x in authors:
+            #         if authors[x]['user_id'] == feed['activity_initiated_by']:
+            #             author = authors[x]
+            #             break
+            # else:
             author = authors[pratilipi['author_id']]
+
+
             response_object = {}
             response_pratilipi = {}
             response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
@@ -260,6 +269,7 @@ def for_user_feed(kwargs):
                                            int(feed['activity_performed_at'].strftime("%s")) * 1000)
                 response_object = _set_key(response_object, 'userRating', "{0:.2f}".format(int(feed['activity_value'])))
                 response_object = _set_key(response_object, 'feedType', 'RATING')
+
             elif feed['activity_type'] == 'GENERIC':
                 response_object = _set_key(response_object, 'feedCreated',
                                            int(pratilipi['published_at'].strftime("%s")) * 1000)
