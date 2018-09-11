@@ -335,6 +335,7 @@ def get_author_recommendations(**kwargs):
 @request_parser
 def get_top_authors(**kwargs):
     """ Top authors """
+    print "In top authors"
     try:
         # query param
         kwargs = transform_request(kwargs)
