@@ -692,7 +692,7 @@ def get_top_authors(language, period, offset, limit):
 
     return obj_list
 
-def get_user_rank(user_id):
+def get_user_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
