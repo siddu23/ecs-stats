@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit, transform_request, transform_request_v1
+from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_top_authors
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -337,11 +337,8 @@ def get_top_authors(**kwargs):
     """ Top authors """
     try:
         # query param
-        kwargs = transform_request(kwargs)
+        kwargs = transform_request_top_authors(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
-        kwargs['period'] = int(kwargs['period']) if 'period' in kwargs else 7
-        kwargs['limit'] = int(kwargs['limit']) if 'limit' in kwargs else 10
-        kwargs['offset'] = int(kwargs['offset']) if 'offset' in kwargs else 0
 
         # validate request
         validate_top_authors_request(kwargs)
