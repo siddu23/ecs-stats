@@ -89,7 +89,7 @@ def transform_request(kwargs):
 
 def transform_request_top_authors(kwargs):
     kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
-    kwargs['period'] = kwargs['period'][0] if 'period' in kwargs else 7
+    kwargs['period'] = int(kwargs['period'][0]) if 'period' in kwargs else 7
     kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
     kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 10
     kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
