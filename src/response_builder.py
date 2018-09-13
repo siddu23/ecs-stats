@@ -320,6 +320,9 @@ def for_top_authors(kwargs):
         response = _set_key(response, 'followCount', data[author['author_id']]['followersCount'] if data != {} else 0)
         response_dict['authorList'].append(response)
 
+    if kwargs['rank']:
+        response_dict['rank'] = kwargs['rank'] + 1 #because ranks are stored from 0 in redis
+
     return json.dumps(response_dict)
 
 def for_reader_score(kwargs):

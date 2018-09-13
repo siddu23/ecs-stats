@@ -681,13 +681,17 @@ def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
 
     return pratilipis
 
-def get_top_authors(language, period):
+def get_top_authors(language, period, offset, limit):
     try:
         conn = connect_redis()
-        author_data = conn.hget('ecsstats:top_authors', language)
+
         obj_list = []
-        if author_data:
-            obj_list = json.loads(author_data)
+        for rank in range(int(offset), int(limit)):
+            author_data = conn.hget('ecsstats:top_authors:authors:{}:{}'.format(language, period), rank)
+            if author_data == None:
+                break
+            obj_list.append(json.loads(author_data))
+
     except Exception as err:
         raise RedisConnectionError(err)
     finally:
@@ -695,6 +699,17 @@ def get_top_authors(language, period):
 
     return obj_list
 
+def get_user_rank(user_id):
+    try:
+        conn = connect_redis()
+        user_rank = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return user_rank
 
 
 def get_most_active_authors_list(language, offset):

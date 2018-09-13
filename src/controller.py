@@ -335,19 +335,22 @@ def get_author_recommendations(**kwargs):
 @request_parser
 def get_top_authors(**kwargs):
     """ Top authors """
-    print "In top authors"
     try:
         # query param
         kwargs = transform_request(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
         kwargs['period'] = int(kwargs['period']) if 'period' in kwargs else 7
+        kwargs['limit'] = int(kwargs['limit']) if 'limit' in kwargs else 10
+        kwargs['offset'] = int(kwargs['offset']) if 'offset' in kwargs else 0
 
         # validate request
         validate_top_authors_request(kwargs)
         language = kwargs['language'].upper()
 
-        authors = cognition.get_top_authors(language, kwargs['period'])
-        response = response_builder.for_top_authors({ 'authors': authors[:10], 'logged_user_id': user_id })
+        authors = cognition.get_top_authors(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
+        rank = cognition.get_user_rank(user_id)
+
+        response = response_builder.for_top_authors({ 'authors': authors[:10], 'rank': rank, 'logged_user_id': user_id })
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
