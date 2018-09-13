@@ -679,7 +679,7 @@ def get_top_authors(language, period, offset, limit):
         conn = connect_redis()
 
         obj_list = []
-        for rank in range(int(offset), int(limit)):
+        for rank in range(offset, offset + limit):
             author_data = conn.hget('ecsstats:top_authors:authors:{}:{}'.format(language, period), rank)
             if author_data == None:
                 break
