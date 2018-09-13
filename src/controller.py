@@ -339,6 +339,7 @@ def get_top_authors(**kwargs):
         # query param
         kwargs = transform_request_top_authors(kwargs)
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        print kwargs
 
         # validate request
         validate_top_authors_request(kwargs)
