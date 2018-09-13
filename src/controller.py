@@ -535,3 +535,23 @@ def get_reader_dashboard(**kwargs):
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+@timeit
+@request_parser
+def get_reader_dashboard(**kwargs):
+    """ Reader dashboard statistics """
+    try:
+        # query param
+        kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
+
+        # validate request
+        validate_for_you_request(kwargs)
+
+        stats = cognition.get_for_you(kwargs['user_id'])
+        response = response_builder.for_reader_dashboard(stats)
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})

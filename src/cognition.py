@@ -121,6 +121,42 @@ def get_authors(author_ids):
             setattr(obj_list[indx], name, row[name])
     return obj_list
 
+def get_authors_for_feed(author_ids, user_ids):
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        if len(author_ids) > 0 and len(user_ids) > 0:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                     d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                     d.content_published, d.total_read_count
+                     FROM author.author d
+                     WHERE d.id IN ({}) or d.user_id in ({})""".format(author_ids, user_ids)
+        elif len(author_ids) > 0:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                                 d.content_published, d.total_read_count
+                                 FROM author.author d
+                                 WHERE d.id IN ({})""".format(author_ids)
+        else:
+            sql = """SELECT d.id, d.user_id, d.first_name, d.first_name_en, d.last_name, d.last_name_en, d.pen_name, d.pen_name_en,
+                                 d.firstname_lastname, d.firstnameen_lastnameen, d.slug, d.profile_image,
+                                 d.content_published, d.total_read_count
+                                 FROM author.author d
+                                 WHERE d.user_id in ({})""".format(user_ids)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+    obj_list = [ Author() for i in range(len(record_set)) ]
+    for indx, row in enumerate(record_set):
+        for name in row:
+            setattr(obj_list[indx], name, row[name])
+    return obj_list
+
 def get_recent_published(kwargs):
     """get recent published"""
     try:
@@ -616,24 +652,6 @@ def get_user_id_list_from_athor_ids(author_id_list, conn):
 
     return user_ids
 
-def get_recent_pratilipis_published_by_authors(author_list, time_delay, conn):
-    pratilipis = []
-
-    try:
-        cursor = conn.cursor()
-        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        time_delay = time_delay + 1
-        day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT * FROM pratilipi.pratilipi WHERE author_id in {} AND state='PUBLISHED' and published_at > '{}' and published_at < '{}' """.format(tuple(author_list), day2, day1)
-        cursor.execute(sql)
-        record_set = cursor.fetchall()
-        for i in record_set:
-            pratilipis.append(i)
-    except Exception as err:
-        raise DbSelectError(err)
-
-    return pratilipis
-
 def get_pratilipis(pratilipi_id_list):
     pratilipis = []
 
@@ -647,31 +665,6 @@ def get_pratilipis(pratilipi_id_list):
         AND NOT content_type = 'AUDIO'
          """.format(pratilipi_id_list)
         print(sql)
-        cursor.execute(sql)
-        record_set = cursor.fetchall()
-        for i in record_set:
-            pratilipis.append(i)
-    except Exception as err:
-        raise DbSelectError(err)
-
-    return pratilipis
-
-
-def get_recent_pratilipis_rated_by_authors(user_id_list, time_delay, conn):
-    pratilipis = []
-
-    try:
-        cursor = conn.cursor()
-        day1 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        time_delay = time_delay + 1
-        day2 = (datetime.now() + timedelta(days=-time_delay)).strftime("%Y-%m-%d")
-        sql = """SELECT *, r.rating AS user_rating, r.date_created AS rating_created
-                 FROM pratilipi.pratilipi p
-                 INNER JOIN (
-                    SELECT rating, reference_id, date_created
-                    FROM social.review
-                    WHERE user_id in {} AND rating > 3 AND state='PUBLISHED' AND reference_type='PRATILIPI' AND date_created > '{}' AND date_created < '{}')
-                 AS r ON r.reference_id = p.id;""".format(tuple(user_id_list), day2, day1)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
@@ -714,7 +707,7 @@ def get_user_rank(user_id):
 
 def get_most_active_authors_list(language, offset):
     try:
-        conn = __builtin__.CONN_RO
+        conn = connectdb()
         cursor = conn.cursor()
 
         day2 = (datetime.now()).strftime("%Y-%m-%d")
@@ -733,7 +726,7 @@ def get_most_active_authors_list(language, offset):
     except Exception as err:
         raise DbSelectError(err)
     finally:
-        cursor.close()
+        disconnectdb(conn)
 
     return author_ids
 
