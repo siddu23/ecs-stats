@@ -2,6 +2,7 @@ import pymysql.cursors
 
 from conf.config import DB
 from conf.config import DB_REPLICA
+from conf.config import DB_DS
 
 class _DbConnectionError(Exception):
     def __init__(self, err):
@@ -42,6 +43,24 @@ def connectdb_replica():
     except Exception as err:
         raise _DbConnectionError(err)
     return connection
+
+def connect_datascience_db():
+    # Connect to the database
+    try:
+        connection = pymysql.connect(host=DB_DS['host'],
+                                     user=DB_DS['user'],
+                                     password=DB_DS['pass'],
+                                     db=DB_DS['name'],
+                                     port=int(DB_DS['port']),
+                                     autocommit=True,
+                                     connect_timeout=86400,
+                                     charset='utf8mb4',
+                                     cursorclass=pymysql.cursors.DictCursor)
+        print "connected to db"
+    except Exception as err:
+        raise _DbConnectionError(err)
+    return connection
+
 
 def disconnectdb(conn):
     conn.close()

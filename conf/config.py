@@ -14,6 +14,13 @@ DB_REPLICA = {'name': 'pratilipi',
       'user': os.environ.get('MASTER_MYSQL_DB_USERNAME'),
       'pass': os.environ.get('MASTER_MYSQL_DB_PASSWORD')}
 
+
+DB_DS = {'name': 'similarity',
+      'host': os.environ.get('DATA_SCIENCE_DB_HOST'),
+      'port': os.environ.get('DATA_SCIENCE_DB_PORT'),
+      'user': os.environ.get('DATA_SCIENCE_DB_USERNAME'),
+      'pass': os.environ.get('DATA_SCIENCE_DB_PASSWORD')}
+
 REDIS = {'db': os.environ.get('MASTER_REDIS_DB'),
          'host': os.environ.get('MASTER_REDIS_ENDPOINT'),
          'port': os.environ.get('MASTER_REDIS_PORT')}

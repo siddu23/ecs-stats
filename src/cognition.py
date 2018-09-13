@@ -995,3 +995,44 @@ def get_reader_dashboard_stats(user_id):
     finally:
         disconnectdb(conn)
     return stats
+
+
+def get_for_you(user_id, offset):
+    try:
+        conn_ds = connect_datascience_db()
+        conn = connectdb()
+        cursor = conn.cursor()
+        cursor_ds = conn_ds.cursor()
+
+        # get user read pratilipi sort by time get latest 10
+        # get similar pratilipi for 10 pratilipis each 5
+        # filter already read
+        # rate with SVD server highest rating
+        sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi 
+                where user_id = {} 
+                and property='READ_WORD_COUNT' 
+                and property_value > 200 
+                order by updated_at limit 5 offset {}""".format(user_id, offset)
+
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+
+
+        pratilipi_similarity = []
+        for x in record_set:
+            sql = """ SELECT * FROM similarity.pratilipi_similarity 
+            where pratilipi_1 = {} 
+            OR pratilipi_2 = {}
+            order by similarity desc limit 5""".format(x['pratilipi_id'], x['pratilipi_id'])
+            print(sql)
+            cursor_ds.execute(sql)
+            record_set = cursor_ds.fetchall()
+            pratilipi_similarity.extend(record_set)
+
+        return pratilipi_similarity
+    except NoDataFound as err:
+        raise NoDataFound(err)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)

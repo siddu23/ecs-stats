@@ -39,3 +39,6 @@ def app_routes(app):
 
     # /stats/v1.0/continue_reading?userid=12345
     app.route('/stats/v1.0/continue_reading', ['GET', 'OPTIONS'], controller.get_continue_reading)
+
+    # /stats/v1.0/for_you?userid=12345
+    app.route('/stats/v1.0/for_you', ['GET'], controller.get_for_you)

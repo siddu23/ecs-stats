@@ -209,6 +209,107 @@ def for_author_recommendations(kwargs):
     response_dict['meta'] = meta
     return json.dumps(response_dict)
 
+def for_you(kwargs):
+    pratilipis = kwargs['pratilipis']
+    authors = kwargs['authors']
+    ratings = kwargs['ratings']
+    pratilipi_id_list = kwargs['pratilipi_id_list']
+    response_dict = { "for_you":[]}
+
+    for id in pratilipi_id_list:
+        if id in pratilipis:
+            pratilipi = pratilipis[id]
+            rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
+            author = authors[pratilipi['author_id']]
+
+
+            response_object = {}
+            response_pratilipi = {}
+            response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
+            response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi['title'])
+            response_pratilipi = _set_key(response_pratilipi, 'titleEn', pratilipi['title_en'])
+            response_pratilipi = _set_key(response_pratilipi, 'displayTitle', pratilipi['title'] if pratilipi['title'] != '' else pratilipi['title_en'])
+            response_pratilipi = _set_key(response_pratilipi, 'authorId', pratilipi['author_id'])
+            response_pratilipi = _set_key(response_pratilipi, 'readPageUrl', "/read?id=" + str(pratilipi['id']))
+            response_pratilipi = _set_key(response_pratilipi, 'writePageUrl', "/pratilipi-write/?id=" + str(pratilipi['id']))
+
+            pratilipi_slug = pratilipi['slug'] if pratilipi['slug'] != '' else pratilipi['slug_en']
+            response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
+
+            response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi['type'])
+            response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi['content_type'])
+            response_pratilipi = _set_key(response_pratilipi, 'summary', pratilipi['summary'] if pratilipi['summary'] is not None else "")
+            response_pratilipi = _set_key(response_pratilipi, 'state', pratilipi['state'])
+            response_pratilipi = _set_key(response_pratilipi, 'readingTime', pratilipi['reading_time'])
+            response_pratilipi = _set_key(response_pratilipi, 'readCount', pratilipi['read_count'])
+            response_pratilipi = _set_key(response_pratilipi, 'lastUpdatedDateMillis', int(pratilipi['updated_at'].strftime("%s")) * 1000)
+            response_pratilipi = _set_key(response_pratilipi, 'listingDateMillis', int(pratilipi['created_at'].strftime("%s")) * 1000)
+            response_pratilipi = _set_key(response_pratilipi, 'coverImageUrl', _pratilipi_cover_image(pratilipi['id'], pratilipi['cover_image']))
+            response_pratilipi = _set_key(response_pratilipi, 'averageRating', "{0:.2f}".format(rating))
+
+            data = {}
+            data['authorId'] = author['id']
+            data['displayName'] = _author_name(author)
+            data['pageUrl'] = _author_slug_details(author)
+            data['contentPublished'] = author['content_published']
+            data['totalReadCount'] = author['total_read_count']
+            data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
+            data['slug'] = _author_slug_details(author)
+            response_pratilipi = _set_key(response_pratilipi, 'author', data)
+            response_object['pratilipi'] = response_pratilipi
+            response_dict['for_you'].append(response_object)
+
+    response_dict['offset'] = kwargs['offset']
+
+    return response_dict
+
+def for_top_authors(kwargs):
+    """top authors"""
+    response_dict = {'authorList': []}
+    authors = kwargs['authors']
+    logged_user_id = kwargs['logged_user_id']
+    for author in authors:
+        response = {}
+        response = _set_key(response, 'authorId', author['author_id'])
+        response = _set_key(response, 'firstName', author['first_name'])
+        response = _set_key(response, 'name', author['first_name'])
+        response = _set_key(response, 'averageRate', "{0:.2f}".format(author['average_rate']))
+        response = _set_key(response, 'averageRatingCount', int(author['average_rating_count']))
+        response = _set_key(response, 'totalReadCount', int(author['total_read']))
+        response = _set_key(response, 'displayName', _author_name(author))
+        response = _set_key(response, 'contentPublished', author['content_published'])
+        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['author_id'], author['profile_image'], 'image'))
+        response = _set_key(response, 'pageUrl', _author_slug_details(author))
+
+        data = supp_service.follow_details([author['author_id']], [logged_user_id], logged_user_id)
+        response = _set_key(response, 'following', data[author['author_id']]['following'] if data != {} else False)
+        response = _set_key(response, 'followCount', data[author['author_id']]['followersCount'] if data != {} else 0)
+        response_dict['authorList'].append(response)
+
+    if kwargs['rank'] != None:
+        response_dict['rank'] = kwargs['rank'] + 1 #because ranks are stored from 0 in redis
+
+    return json.dumps(response_dict)
+
+def for_reader_score(kwargs):
+    """reader score response"""
+    response = {}
+    response = _set_key(response, 'read_word_count', kwargs['read_word_count'])
+    if kwargs['no_of_books_read'] is not None: response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
+    if kwargs['tier'] is not None: response = _set_key(response, 'tier', kwargs['tier'])
+    return json.dumps(response)
+
+def for_reader_dashboard(kwargs):
+    """reader dasboard"""
+    response = {}
+    response = _set_key(response, 'word_count', int(kwargs['word_count']) if kwargs['word_count'] != None else 0)
+    response = _set_key(response, 'only_reviews', int(kwargs['only_reviews']) if kwargs['only_reviews'] != None else 0)
+    response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']) if kwargs['rate_and_review'] != None else 0)
+    response = _set_key(response, 'following_count', int(kwargs['following_count']) if kwargs['following_count'] != None else 0)
+    response = _set_key(response, 'read_categories', kwargs['read_categories'])
+    return json.dumps(response)
+
+
 def for_user_feed(kwargs):
     pratilipis = kwargs['pratilipis']
     authors = kwargs['authors']
@@ -296,49 +397,3 @@ def for_user_feed(kwargs):
     response_dict['offset'] = kwargs['offset']
 
     return response_dict
-
-def for_top_authors(kwargs):
-    """top authors"""
-    response_dict = {'authorList': []}
-    authors = kwargs['authors']
-    logged_user_id = kwargs['logged_user_id']
-    for author in authors:
-        response = {}
-        response = _set_key(response, 'authorId', author['author_id'])
-        response = _set_key(response, 'firstName', author['first_name'])
-        response = _set_key(response, 'name', author['first_name'])
-        response = _set_key(response, 'averageRate', "{0:.2f}".format(author['average_rate']))
-        response = _set_key(response, 'averageRatingCount', int(author['average_rating_count']))
-        response = _set_key(response, 'totalReadCount', int(author['total_read']))
-        response = _set_key(response, 'displayName', _author_name(author))
-        response = _set_key(response, 'contentPublished', author['content_published'])
-        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['author_id'], author['profile_image'], 'image'))
-        response = _set_key(response, 'pageUrl', _author_slug_details(author))
-
-        data = supp_service.follow_details([author['author_id']], [logged_user_id], logged_user_id)
-        response = _set_key(response, 'following', data[author['author_id']]['following'] if data != {} else False)
-        response = _set_key(response, 'followCount', data[author['author_id']]['followersCount'] if data != {} else 0)
-        response_dict['authorList'].append(response)
-
-    if kwargs['rank'] != None:
-        response_dict['rank'] = kwargs['rank'] + 1 #because ranks are stored from 0 in redis
-
-    return json.dumps(response_dict)
-
-def for_reader_score(kwargs):
-    """reader score response"""
-    response = {}
-    response = _set_key(response, 'read_word_count', kwargs['read_word_count'])
-    if kwargs['no_of_books_read'] is not None: response = _set_key(response, 'no_of_books_read', kwargs['no_of_books_read'])
-    if kwargs['tier'] is not None: response = _set_key(response, 'tier', kwargs['tier'])
-    return json.dumps(response)
-
-def for_reader_dashboard(kwargs):
-    """reader dasboard"""
-    response = {}
-    response = _set_key(response, 'word_count', int(kwargs['word_count']) if kwargs['word_count'] != None else 0)
-    response = _set_key(response, 'only_reviews', int(kwargs['only_reviews']) if kwargs['only_reviews'] != None else 0)
-    response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']) if kwargs['rate_and_review'] != None else 0)
-    response = _set_key(response, 'following_count', int(kwargs['following_count']) if kwargs['following_count'] != None else 0)
-    response = _set_key(response, 'read_categories', kwargs['read_categories'])
-    return json.dumps(response)

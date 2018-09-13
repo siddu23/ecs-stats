@@ -536,17 +536,52 @@ def get_reader_dashboard(**kwargs):
 
 @timeit
 @request_parser
-def get_reader_dashboard(**kwargs):
+def get_for_you(**kwargs):
     """ Reader dashboard statistics """
     try:
         # query param
+        language = kwargs['language'][0].lower() if 'language' in kwargs else None
+        offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
-
+        response = {}
         # validate request
         validate_for_you_request(kwargs)
 
-        stats = cognition.get_for_you(kwargs['user_id'])
-        response = response_builder.for_reader_dashboard(stats)
+        pratilipi_similarity = cognition.get_for_you(kwargs['user_id'], offset)
+        pratilipi_ids_list = []
+        pratilipi_ids_similarity = {}
+        for x in pratilipi_similarity:
+            if x['pratilipi_1'] not in pratilipi_ids_list:
+                pratilipi_ids_list.append(x['pratilipi_1'])
+                pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
+            elif x['pratilipi_2'] not in pratilipi_ids_list:
+                pratilipi_ids_list.append(x['pratilipi_2'])
+                pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
+
+        print pratilipi_ids_list
+        pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
+        if len(pratilipi_similarity) != 0:
+
+            pratilipis = cognition.get_pratilipis(pratilipi_ids)
+            pratilipi_dict = _dict_to_dict(pratilipis)
+
+            # get authors related to pratilipis
+            author_ids = ",".join([str(x['author_id']) for x in pratilipis])
+            authors = cognition.get_authors(author_ids)
+            author_dict = _object_to_dict(authors)
+
+            # get ratings related to pratilipis
+            ratings = cognition.get_ratings(pratilipi_ids)
+            rating_dict = _object_to_dict(ratings)
+
+            response_kwargs = {'pratilipi_id_list' : pratilipi_ids_list,
+                               'pratilipis': pratilipi_dict,
+                               'authors': author_dict,
+                               'ratings': rating_dict,
+                               'offset': 0,
+                               'language': language}
+            response = response_builder.for_you(response_kwargs)
+
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
         return bottle.HTTPResponse(status=400)
