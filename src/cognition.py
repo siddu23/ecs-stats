@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import __builtin__
 import json
 
@@ -6,6 +9,16 @@ from model import *
 from exceptions import *
 from dbutil import *
 from redisutil import *
+
+# hindi, bengali, gujurati, tamil, telugu, kannada
+uni_array = [u'०', u'१' , u'२', u'३', u'४', u'५', u'६', u'७', u'८', u'९',
+             u'০', u'১', u'২', u'৩', u'৪', u'৫', u'৬', u'৭', u'৮', u'৯',
+             u'૦', u'૧', u'૨', u'૩', u'૪', u'૫', u'૬', u'૭', u'૮', u'૯',
+             u'௦', u'௧', u'௨', u'௩', u'௪', u'௫', u'௬', u'௭', u'௮', u'௯',
+             u'౦', u'౧', u'౨',	u'౩', u'౪',	u'౫', u'౬',	u'౭', u'౮', u'౯',
+             u'೦', u'೧', u'೨', u'೩', u'೪', u'೫', u'೬', u'೭', u'೮', u'೯',
+             u'൦', u'൧', u'൨', u'൩', u'൪',	u'൫', u'൬', u'൭', u'൮', u'൯']
+
 
 def health():
     result = {"state": "healthy"}
@@ -674,6 +687,32 @@ def get_pratilipis(pratilipi_id_list):
 
     return pratilipis
 
+def get_pratilipis_for_you(pratilipi_id_list, user_id):
+    pratilipis = []
+
+    try:
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        sql = """SELECT * FROM pratilipi.pratilipi
+        WHERE id in ({})
+        AND state='PUBLISHED'
+        AND NOT content_type IN ('AUDIO', 'ARTICLE')
+        AND title_en not like '%Untitled%'
+        AND user_id != {}
+         """.format(pratilipi_id_list, user_id)
+        print(sql)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+        for i in record_set:
+            if is_not_serialized(i):
+                pratilipis.append(i)
+    except Exception as err:
+        raise DbSelectError(err)
+
+    return pratilipis
+
+
 def get_top_authors(language, period, offset, limit):
     try:
         conn = connect_redis()
@@ -1012,7 +1051,7 @@ def get_for_you(user_id, offset):
                 where user_id = {} 
                 and property='READ_WORD_COUNT' 
                 and property_value > 200 
-                order by updated_at limit 5 offset {}""".format(user_id, offset)
+                order by updated_at limit 10 offset {}""".format(user_id, offset)
 
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -1023,7 +1062,7 @@ def get_for_you(user_id, offset):
             sql = """ SELECT * FROM similarity.pratilipi_similarity 
             where pratilipi_1 = {} 
             OR pratilipi_2 = {}
-            order by similarity desc limit 5""".format(x['pratilipi_id'], x['pratilipi_id'])
+            order by similarity desc limit 3""".format(x['pratilipi_id'], x['pratilipi_id'])
             print(sql)
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()
@@ -1036,3 +1075,10 @@ def get_for_you(user_id, offset):
         raise DbSelectError(err)
     finally:
         disconnectdb(conn)
+
+
+def is_not_serialized(pratilipi):
+    for x in uni_array:
+        if pratilipi['title'].find(x) >= 0:
+            return False
+    return True

@@ -562,7 +562,7 @@ def get_for_you(**kwargs):
         pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
         if len(pratilipi_similarity) != 0:
 
-            pratilipis = cognition.get_pratilipis(pratilipi_ids)
+            pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'])
             pratilipi_dict = _dict_to_dict(pratilipis)
 
             # get authors related to pratilipis
