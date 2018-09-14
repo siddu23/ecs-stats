@@ -1065,7 +1065,7 @@ def get_for_you(user_id, offset):
             if offset == 0 and offset_similarity == 0:
                 # user hasn't read anything yet
                 return []
-            elif offset > 0 and offset_similarity == 0:
+            elif offset > 0:
                 # used up all pratilipis read by user with 3 highest similar
                 offset = 0
                 offset_similarity = offset_similarity + 3
