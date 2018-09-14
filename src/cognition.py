@@ -1038,9 +1038,14 @@ def get_reader_dashboard_stats(user_id):
 
 def get_for_you(user_id, offset):
     try:
-        conn_ds = connect_datascience_db()
+        offset_array = offset.split("-")
+        offset = int(offset_array[0]) if int(offset_array[0]) > 0 else 0
+        offset_similarity = int(offset_array[1]) if int(offset_array[1]) > 0 else 0
+
         conn = connectdb()
         cursor = conn.cursor()
+
+        conn_ds = connect_datascience_db()
         cursor_ds = conn_ds.cursor()
 
         # get user read pratilipi sort by time get latest 10
@@ -1056,19 +1061,37 @@ def get_for_you(user_id, offset):
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
+        if len(record_set) == 0:
+            if offset == 0 and offset_similarity == 0:
+                # user hasn't read anything yet
+                return []
+            elif offset > 0 and offset_similarity == 0:
+                # used up all pratilipis read by user with 3 highest similar
+                offset = 0
+                offset_similarity = offset_similarity + 3
+
+            sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi 
+                            where user_id = {} 
+                            and property='READ_WORD_COUNT' 
+                            and property_value > 200 
+                            order by updated_at limit 10 offset {}""".format(user_id, offset)
+
+            cursor.execute(sql)
+            record_set = cursor.fetchall()
+
 
         pratilipi_similarity = []
         for x in record_set:
             sql = """ SELECT * FROM similarity.pratilipi_similarity 
-            where pratilipi_1 = {} 
-            OR pratilipi_2 = {}
-            order by similarity desc limit 3""".format(x['pratilipi_id'], x['pratilipi_id'])
+                    where pratilipi_1 = {} 
+                    OR pratilipi_2 = {}
+                    order by similarity desc limit 3 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
             print(sql)
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()
             pratilipi_similarity.extend(record_set)
 
-        return pratilipi_similarity
+        return pratilipi_similarity, offset, offset_similarity
     except NoDataFound as err:
         raise NoDataFound(err)
     except Exception as err:

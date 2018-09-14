@@ -259,8 +259,12 @@ def for_you(kwargs):
             response_object['pratilipi'] = response_pratilipi
             response_dict['for_you'].append(response_object)
 
-    response_dict['offset'] = kwargs['offset']
-
+    response_dict['cursor'] = kwargs['offset']
+    offset_parts = kwargs['offset'].split('-')
+    if int(offset_parts[0]) > 10 and int(offset_parts[1]) > 10:
+        response_dict['finished'] = True
+    else:
+        response_dict['finished'] = False
     return response_dict
 
 def for_top_authors(kwargs):

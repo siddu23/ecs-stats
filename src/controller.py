@@ -541,13 +541,13 @@ def get_for_you(**kwargs):
     try:
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else None
-        offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
+        offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
         response = {}
         # validate request
         validate_for_you_request(kwargs)
 
-        pratilipi_similarity = cognition.get_for_you(kwargs['user_id'], offset)
+        pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], offset)
         pratilipi_ids_list = []
         pratilipi_ids_similarity = {}
         for x in pratilipi_similarity:
@@ -574,11 +574,12 @@ def get_for_you(**kwargs):
             ratings = cognition.get_ratings(pratilipi_ids)
             rating_dict = _object_to_dict(ratings)
 
+            offset = str(offset) + "-" + str(offset_similarity)
             response_kwargs = {'pratilipi_id_list' : pratilipi_ids_list,
                                'pratilipis': pratilipi_dict,
                                'authors': author_dict,
                                'ratings': rating_dict,
-                               'offset': 0,
+                               'offset': offset,
                                'language': language}
             response = response_builder.for_you(response_kwargs)
 
