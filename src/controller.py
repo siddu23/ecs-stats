@@ -348,7 +348,7 @@ def get_top_authors(**kwargs):
         authors = cognition.get_top_authors(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
         rank = cognition.get_user_rank(language, kwargs['period'], user_id)
 
-        response = response_builder.for_top_authors({ 'authors': authors, 'rank': rank, 'logged_user_id': user_id, offset: kwargs['offset'] + kwargs['limit'] })
+        response = response_builder.for_top_authors({ 'authors': authors, 'rank': rank, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
