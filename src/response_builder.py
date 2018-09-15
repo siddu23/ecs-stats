@@ -271,6 +271,10 @@ def for_top_authors(kwargs):
     response_dict = {'authorList': []}
     authors = kwargs['authors']
     logged_user_id = kwargs['logged_user_id']
+
+    if len(authors) > 0:
+        response_dict['offset'] = kwargs['offset']
+
     for author in authors:
         response = {}
         response = _set_key(response, 'authorId', author['author_id'])
