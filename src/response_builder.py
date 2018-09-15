@@ -256,8 +256,7 @@ def for_you(kwargs):
             data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
             data['slug'] = _author_slug_details(author)
             response_pratilipi = _set_key(response_pratilipi, 'author', data)
-            response_object['pratilipi'] = response_pratilipi
-            response_dict['for_you'].append(response_object)
+            response_dict['for_you'].append(response_pratilipi)
 
     response_dict['cursor'] = kwargs['offset']
     offset_parts = kwargs['offset'].split('-')
