@@ -217,7 +217,7 @@ def for_you(kwargs):
     response_dict = { "for_you":[]}
 
     for id in pratilipi_id_list:
-        if id in pratilipis:
+        if int(id) in pratilipis:
             pratilipi = pratilipis[id]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
             author = authors[pratilipi['author_id']]

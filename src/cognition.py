@@ -687,7 +687,7 @@ def get_pratilipis(pratilipi_id_list):
 
     return pratilipis
 
-def get_pratilipis_for_you(pratilipi_id_list, user_id):
+def get_pratilipis_for_you(pratilipi_id_list, user_id, language):
     pratilipis = []
 
     try:
@@ -697,10 +697,13 @@ def get_pratilipis_for_you(pratilipi_id_list, user_id):
         sql = """SELECT * FROM pratilipi.pratilipi
         WHERE id in ({})
         AND state='PUBLISHED'
-        AND NOT content_type IN ('AUDIO', 'ARTICLE')
+        AND NOT content_type IN ('AUDIO')
+        AND type NOT IN ('POEM', 'ARTICLE')
         AND title_en not like '%Untitled%'
+        AND language = '{}'
         AND user_id != {}
-         """.format(pratilipi_id_list, user_id)
+        AND read_count > 200
+         """.format(pratilipi_id_list, language, user_id)
         print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
