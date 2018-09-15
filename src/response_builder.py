@@ -235,6 +235,7 @@ def for_you(kwargs):
 
             pratilipi_slug = pratilipi['slug'] if pratilipi['slug'] != '' else pratilipi['slug_en']
             response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
+            response_pratilipi = _set_key(response_pratilipi, 'pageUrl', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
 
             response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi['type'])
             response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi['content_type'])
