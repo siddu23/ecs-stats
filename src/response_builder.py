@@ -218,6 +218,7 @@ def for_you(kwargs):
 
     for id in pratilipi_id_list:
         if int(id) in pratilipis:
+            id = int(id)
             pratilipi = pratilipis[id]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
             author = authors[pratilipi['author_id']]
