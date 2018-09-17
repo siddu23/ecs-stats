@@ -217,7 +217,8 @@ def for_you(kwargs):
     response_dict = { "for_you":[]}
 
     for id in pratilipi_id_list:
-        if id in pratilipis:
+        if int(id) in pratilipis:
+            id = int(id)
             pratilipi = pratilipis[id]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
             author = authors[pratilipi['author_id']]
@@ -235,6 +236,7 @@ def for_you(kwargs):
 
             pratilipi_slug = pratilipi['slug'] if pratilipi['slug'] != '' else pratilipi['slug_en']
             response_pratilipi = _set_key(response_pratilipi, 'slug', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
+            response_pratilipi = _set_key(response_pratilipi, 'pageUrl', '/story/{}-{}'.format(pratilipi_slug, pratilipi['slug_id']))
 
             response_pratilipi = _set_key(response_pratilipi, 'type', pratilipi['type'])
             response_pratilipi = _set_key(response_pratilipi, 'contentType', pratilipi['content_type'])
@@ -256,8 +258,7 @@ def for_you(kwargs):
             data['profileImageUrl'] = supp_service.get_image_url(author['id'], author['profile_image'], 'image')
             data['slug'] = _author_slug_details(author)
             response_pratilipi = _set_key(response_pratilipi, 'author', data)
-            response_object['pratilipi'] = response_pratilipi
-            response_dict['for_you'].append(response_object)
+            response_dict['for_you'].append(response_pratilipi)
 
     response_dict['cursor'] = kwargs['offset']
     offset_parts = kwargs['offset'].split('-')

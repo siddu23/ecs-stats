@@ -540,7 +540,7 @@ def get_for_you(**kwargs):
     """ Reader dashboard statistics """
     try:
         # query param
-        language = kwargs['language'][0].lower() if 'language' in kwargs else None
+        language = kwargs['language'][0].lower() if 'language' in kwargs else 'hindi'
         offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
         response = {}
@@ -558,17 +558,19 @@ def get_for_you(**kwargs):
                 pratilipi_ids_list.append(x['pratilipi_2'])
                 pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
 
-        print pratilipi_ids_list
         pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
         if len(pratilipi_similarity) != 0:
 
-            pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'])
+            pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
             pratilipi_dict = _dict_to_dict(pratilipis)
 
             # get authors related to pratilipis
             author_ids = ",".join([str(x['author_id']) for x in pratilipis])
             authors = cognition.get_authors(author_ids)
             author_dict = _object_to_dict(authors)
+
+            pratilipi_ids_list = [str(x['id']) for x in pratilipis]
+            pratilipi_ids = ",".join(pratilipi_ids_list)
 
             # get ratings related to pratilipis
             ratings = cognition.get_ratings(pratilipi_ids)
