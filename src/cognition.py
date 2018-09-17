@@ -738,6 +738,8 @@ def get_user_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank_json = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+        print user_id
+        print user_rank_json
         user_rank_data = None
         if user_rank_json != None:
             user_rank_data = json.loads(user_rank_json)
