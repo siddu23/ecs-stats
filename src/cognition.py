@@ -734,14 +734,17 @@ def get_top_authors(language, period, offset, limit):
 def get_user_rank(language, period, user_id):
     try:
         conn = connect_redis()
-        user_rank = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+        user_rank_json = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+        user_rank_data = None
+        if user_rank_json != None:
+            user_rank_data = json.loads(user_rank_json)
 
     except Exception as err:
         raise RedisConnectionError(err)
     finally:
         disconnect_redis(conn)
 
-    return user_rank
+    return user_rank_data
 
 
 def get_most_active_authors_list(language, offset):
@@ -1052,10 +1055,10 @@ def get_for_you(user_id, offset):
         # get similar pratilipi for 10 pratilipis each 5
         # filter already read
         # rate with SVD server highest rating
-        sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi 
-                where user_id = {} 
-                and property='READ_WORD_COUNT' 
-                and property_value > 200 
+        sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi
+                where user_id = {}
+                and property='READ_WORD_COUNT'
+                and property_value > 200
                 order by updated_at limit 10 offset {}""".format(user_id, offset)
 
         cursor.execute(sql)
@@ -1070,10 +1073,10 @@ def get_for_you(user_id, offset):
                 offset = 0
                 offset_similarity = offset_similarity + 3
 
-            sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi 
-                            where user_id = {} 
-                            and property='READ_WORD_COUNT' 
-                            and property_value > 200 
+            sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi
+                            where user_id = {}
+                            and property='READ_WORD_COUNT'
+                            and property_value > 200
                             order by updated_at limit 10 offset {}""".format(user_id, offset)
 
             cursor.execute(sql)
@@ -1082,8 +1085,8 @@ def get_for_you(user_id, offset):
 
         pratilipi_similarity = []
         for x in record_set:
-            sql = """ SELECT * FROM similarity.pratilipi_similarity 
-                    where pratilipi_1 = {} 
+            sql = """ SELECT * FROM similarity.pratilipi_similarity
+                    where pratilipi_1 = {}
                     OR pratilipi_2 = {}
                     order by similarity desc limit 3 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
             print(sql)
