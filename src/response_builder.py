@@ -299,7 +299,6 @@ def for_top_authors(kwargs):
         response_dict['rankData'] = {}
         response_dict['rankData']['rank'] = kwargs['rank_data']['rank'] + 1 #because ranks are stored from 0 in redis
 
-
         rank_data = {}
         rank_data = _set_key(rank_data, 'authorId', kwargs['rank_data']['data']['author_id'])
         rank_data = _set_key(rank_data, 'firstName', kwargs['rank_data']['data']['first_name'])
@@ -313,8 +312,8 @@ def for_top_authors(kwargs):
         rank_data = _set_key(rank_data, 'pageUrl', _author_slug_details(kwargs['rank_data']['data']))
 
         data = supp_service.follow_details([kwargs['rank_data']['data']['author_id']], [logged_user_id], logged_user_id)
-        rank_data = _set_key(response, 'following', data[kwargs['rank_data']['data']['author_id']]['following'] if data != {} else False)
-        rank_data = _set_key(response, 'followCount', data[kwargs['rank_data']['data']['author_id']]['followersCount'] if data != {} else 0)
+        rank_data = _set_key(rank_data, 'following', data[kwargs['rank_data']['data']['author_id']]['following'] if data != {} else False)
+        rank_data = _set_key(rank_data, 'followCount', data[kwargs['rank_data']['data']['author_id']]['followersCount'] if data != {} else 0)
         response_dict['rankData']['data'] = rank_data
 
 
