@@ -331,7 +331,7 @@ def for_reader_dashboard(kwargs):
     """reader dasboard"""
     response = {}
     response = _set_key(response, 'word_count', int(kwargs['word_count']) if kwargs['word_count'] != None else 0)
-    response = _set_key(response, 'is_private', int(kwargs['is_private']) if kwargs['is_private'] != None else False)
+    response = _set_key(response, 'is_private', kwargs['is_private'] if kwargs['is_private'] != None else False)
     response = _set_key(response, 'pratilipi_count', int(kwargs['pratilipi_count']) if kwargs['pratilipi_count'] != None else 0)
     response = _set_key(response, 'only_reviews', int(kwargs['only_reviews']) if kwargs['only_reviews'] != None else 0)
     response = _set_key(response, 'rate_and_review', int(kwargs['rate_and_review']) if kwargs['rate_and_review'] != None else 0)
