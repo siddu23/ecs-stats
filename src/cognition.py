@@ -1039,7 +1039,7 @@ def get_reader_dashboard_stats(user_id):
         stats['read_categories'] = read_categories[:3]
 
         sql_for_dashboard_privacy = """ SELECT * FROM user.preference
-                                        WHERE user_id = {} AND type = {}""".format(user_id, 'READER_DASHBOARD_PRIVACY')
+                                        WHERE user_id = {} AND type = '{}'""".format(user_id, 'READER_DASHBOARD_PRIVACY')
         cursor.execute(sql_for_dashboard_privacy)
         privacy_data = cursor.fetchall()
         is_private = False
