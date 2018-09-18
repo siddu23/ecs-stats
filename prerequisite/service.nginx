@@ -48,6 +48,11 @@ server {
         proxy_no_cache 1;
     }
 
+    location /stats/v1.0/reader_dashboard {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_no_cache 1;
+    }
+
     location /stats/v1.0/top_authors {
         proxy_pass http://unix:/service/service.sock;
         proxy_no_cache 1;
