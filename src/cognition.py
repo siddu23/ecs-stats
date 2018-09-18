@@ -1042,13 +1042,14 @@ def get_reader_dashboard_stats(user_id):
                                         WHERE user_id = {} AND type = '{}'""".format(user_id, 'READER_DASHBOARD_PRIVACY')
         cursor.execute(sql_for_dashboard_privacy)
         privacy_data = cursor.fetchall()
-        is_private = False
 
-        for i in privacy_data:
-            if i['value'] == 'PRIVATE':
-                is_private = True
-
-        stats['is_private'] = is_private
+        if cursor.rowcount == 0:
+            stats['is_private'] = False
+        else:
+            if privacy_data[0]['value'] == 'PRIVATE':
+                stats['is_private'] = True
+            else:
+                stats['is_private'] = False
 
     except NoDataFound as err:
         raise NoDataFound(err)
