@@ -1038,6 +1038,18 @@ def get_reader_dashboard_stats(user_id):
 
         stats['read_categories'] = read_categories[:3]
 
+        sql_for_dashboard_privacy = """ SELECT * FROM user.preference
+                                        WHERE user_id = {} AND type = {}""".format(user_id, 'READER_DASHBOARD_PRIVACY')
+        cursor.execute(sql_for_dashboard_privacy)
+        privacy_data = cursor.fetchall()
+        is_private = False
+
+        for i in privacy_data:
+            if i['value'] == 'PRIVATE':
+                is_private = True
+
+        stats['is_private'] = is_private
+
     except NoDataFound as err:
         raise NoDataFound(err)
     except Exception as err:
