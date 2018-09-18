@@ -982,12 +982,14 @@ def get_reader_dashboard_stats(user_id):
 
         sql_for_basic_stats = """ SELECT
                     read_stats.word_count as word_count,
+                    read_stats.pratilipi_count as pratilipi_count,
                     review_stats.only_review as only_reviews,
                     review_stats.rate_and_review as rate_and_review,
                     following_stats.following_count as following_count
                     FROM
                         (SELECT
-                            SUM(property_value) as word_count
+                            SUM(property_value) as word_count,
+                            COUNT(DISTINCT pratilipi_id) as pratilipi_count
                             FROM user_pratilipi.user_pratilipi
                             WHERE property = 'READ_WORD_COUNT' AND user_id = {}) as read_stats,
                         (SELECT
@@ -1006,6 +1008,7 @@ def get_reader_dashboard_stats(user_id):
 
         stats = {
             'word_count': record_set[0]['word_count'],
+            'pratilipi_count': record_set[0]['pratilipi_count'],
             'only_reviews': record_set[0]['only_reviews'],
             'rate_and_review': record_set[0]['rate_and_review'],
             'following_count': record_set[0]['following_count']
