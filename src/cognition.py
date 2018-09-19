@@ -412,7 +412,7 @@ def get_author_dashboard(kwargs):
                  WHERE author_id = {}
                  AND state = "PUBLISHED"
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                 AND metainfo_updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
+                 AND published_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_content_published = recordset.get('content_published', 0)
