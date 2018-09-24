@@ -482,26 +482,12 @@ def get_continue_reading(**kwargs):
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
 
-        # get authors related to pratilipis
-        author_ids = _join_authorids(pratilipis)
-        authors = cognition.get_authors(author_ids)
-        author_dict = _object_to_dict(authors)
-
-        # get ratings related to pratilipis
-        pratilipi_ids = _join_pratilipiids(pratilipis)
-        ratings = cognition.get_ratings(pratilipi_ids)
-        rating_dict = _object_to_dict(ratings)
-
         response_kwargs = { 'pratilipis': pratilipis,
-                            'authors': author_dict,
-                            'ratings': rating_dict,
-                            'librarys': {},
                             'total_pratilipis': total_pratilipis,
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
-        response = response_builder.for_all(response_kwargs)
-
+        response = response_builder.for_continue_reading(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
