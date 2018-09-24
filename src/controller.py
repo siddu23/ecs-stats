@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_top_authors
+from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_v2, transform_request_top_authors
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -474,7 +474,7 @@ def get_continue_reading(**kwargs):
     """get continue reading"""
     try:
         # query param
-        kwargs = transform_request_v1(kwargs)
+        kwargs = transform_request_v2(kwargs)
 
         # validate request
         validate_continue_reading_request(kwargs)
@@ -482,15 +482,16 @@ def get_continue_reading(**kwargs):
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
 
-        response_kwargs = { 'pratilipis': pratilipis,
-                            'total_pratilipis': total_pratilipis,
-                            'limit': kwargs['limit'],
-                            'offset': kwargs['offset'] }
+        response_kwargs = { 'pratilipis': pratilipis, 'total_pratilipis': total_pratilipis, 'limit': kwargs['limit'], 'offset': kwargs['offset'] }
 
         response = response_builder.for_continue_reading(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageInvalid as err:
         return bottle.HTTPResponse(status=400)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
