@@ -434,6 +434,6 @@ def for_continue_reading(kwargs):
     response = _set_key(response, 'found', kwargs['total_pratilipis'])
     response = _set_key(response, 'limit', kwargs['limit'])
     response = _set_key(response, 'offset', kwargs['offset'])
-    pratilipis = [str(pratilipi.id) for i in kwargs['pratilipis']]
+    pratilipis = [str(i.id) for i in kwargs['pratilipis']]
     response = _set_key(response, 'pratilipiList', pratilipis)
     return json.dumps(response)
