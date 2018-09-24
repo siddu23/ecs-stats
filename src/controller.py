@@ -550,17 +550,21 @@ def get_for_you(**kwargs):
             pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
             pratilipi_dict = _dict_to_dict(pratilipis)
 
-            # get authors related to pratilipis
-            author_ids = ",".join([str(x['author_id']) for x in pratilipis])
-            authors = cognition.get_authors(author_ids)
-            author_dict = _object_to_dict(authors)
+            author_dict = {}
+            rating_dict = {}
 
             pratilipi_ids_list = [str(x['id']) for x in pratilipis]
             pratilipi_ids = ",".join(pratilipi_ids_list)
 
-            # get ratings related to pratilipis
-            ratings = cognition.get_ratings(pratilipi_ids)
-            rating_dict = _object_to_dict(ratings)
+            if len(pratilipis) > 0:
+                # get authors related to pratilipis
+                author_ids = ",".join([str(x['author_id']) for x in pratilipis])
+                authors = cognition.get_authors(author_ids)
+                author_dict = _object_to_dict(authors)
+
+                # get ratings related to pratilipis
+                ratings = cognition.get_ratings(pratilipi_ids)
+                rating_dict = _object_to_dict(ratings)
 
             offset = str(offset) + "-" + str(offset_similarity)
             response_kwargs = {'pratilipi_id_list' : pratilipi_ids_list,
