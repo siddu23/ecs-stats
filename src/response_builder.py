@@ -431,9 +431,9 @@ def for_user_feed(kwargs):
 
 def for_continue_reading(kwargs):
     response = {}
-    response = _set_key(response, 'found', kwargs['total_pratilipis'])
+    response = _set_key(response, 'total', kwargs['total_pratilipis'])
     response = _set_key(response, 'limit', kwargs['limit'])
     response = _set_key(response, 'offset', kwargs['offset'])
     pratilipis = [str(i.id) for i in kwargs['pratilipis']]
-    response = _set_key(response, 'pratilipiList', pratilipis)
+    response = _set_key(response, 'ids', pratilipis)
     return json.dumps(response)
