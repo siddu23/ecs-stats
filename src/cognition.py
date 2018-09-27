@@ -412,7 +412,7 @@ def get_author_dashboard(kwargs):
                  WHERE author_id = {}
                  AND state = "PUBLISHED"
                  AND content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
-                 AND metainfo_updated_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
+                 AND published_at >= convert_tz(CONCAT(SUBSTRING_INDEX(convert_tz(NOW(),@@session.time_zone,'+05:30'), " ", 1), " 00:00:00"),@@session.time_zone,'-05:30')""".format(author_id)
         cursor.execute(sql)
         recordset = cursor.fetchone()
         todays_content_published = recordset.get('content_published', 0)
@@ -891,6 +891,7 @@ def get_continue_reading(kwargs):
 
         # fetch data
         user_id = kwargs['user_id']
+        language = kwargs['language']
         limit = kwargs['limit']
         offset = kwargs['offset']
         total_pratilipis = 0
@@ -912,8 +913,9 @@ def get_continue_reading(kwargs):
                  AND b.date_updated BETWEEN CURRENT_TIMESTAMP() - INTERVAL 60 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
                  AND c.state = 'PUBLISHED'
                  AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND c.language = '{}'
                  AND d.user_id = {}
-                 AND d.property = 'READ_WORD_COUNT'""".format(user_id, user_id)
+                 AND d.property = 'READ_WORD_COUNT'""".format(user_id, language, user_id)
         cursor.execute(sql)
         library_set = cursor.fetchall()
         total_pratilipis = cursor.rowcount
@@ -932,7 +934,8 @@ def get_continue_reading(kwargs):
                  AND b.state = 'PUBLISHED'
                  AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND b.reading_time > 0
-                 AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id)
+                 AND b.language = '{}'
+                 AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id, language)
         cursor.execute(sql)
         read_set = cursor.fetchall()
         total_pratilipis = total_pratilipis + cursor.rowcount

@@ -50,6 +50,12 @@ def validate_continue_reading_request(req):
     if req['user_id'] is None or req['user_id'] == 0:
         raise UserIdRequired
 
+    if req['language'] is None:
+        raise LanguageRequired
+
+    if req['language'].lower() not in LANGUAGE:
+        raise LanguageInvalid
+
 def validate_reader_dashboard_request(req):
     if req['user_id'] is None or req['user_id'] == 0:
         raise UserIdRequired

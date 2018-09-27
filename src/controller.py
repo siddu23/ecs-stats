@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_top_authors
+from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_v2, transform_request_top_authors
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -499,7 +499,7 @@ def get_continue_reading(**kwargs):
     """get continue reading"""
     try:
         # query param
-        kwargs = transform_request_v1(kwargs)
+        kwargs = transform_request_v2(kwargs)
 
         # validate request
         validate_continue_reading_request(kwargs)
@@ -507,29 +507,16 @@ def get_continue_reading(**kwargs):
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
 
-        # get authors related to pratilipis
-        author_ids = _join_authorids(pratilipis)
-        authors = cognition.get_authors(author_ids)
-        author_dict = _object_to_dict(authors)
+        response_kwargs = { 'pratilipis': pratilipis, 'total_pratilipis': total_pratilipis, 'limit': kwargs['limit'], 'offset': kwargs['offset'] }
 
-        # get ratings related to pratilipis
-        pratilipi_ids = _join_pratilipiids(pratilipis)
-        ratings = cognition.get_ratings(pratilipi_ids)
-        rating_dict = _object_to_dict(ratings)
-
-        response_kwargs = { 'pratilipis': pratilipis,
-                            'authors': author_dict,
-                            'ratings': rating_dict,
-                            'librarys': {},
-                            'total_pratilipis': total_pratilipis,
-                            'limit': kwargs['limit'],
-                            'offset': kwargs['offset'] }
-
-        response = response_builder.for_all(response_kwargs)
-
+        response = response_builder.for_continue_reading(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageInvalid as err:
         return bottle.HTTPResponse(status=400)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
@@ -589,17 +576,21 @@ def get_for_you(**kwargs):
             pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
             pratilipi_dict = _dict_to_dict(pratilipis)
 
-            # get authors related to pratilipis
-            author_ids = ",".join([str(x['author_id']) for x in pratilipis])
-            authors = cognition.get_authors(author_ids)
-            author_dict = _object_to_dict(authors)
+            author_dict = {}
+            rating_dict = {}
 
             pratilipi_ids_list = [str(x['id']) for x in pratilipis]
             pratilipi_ids = ",".join(pratilipi_ids_list)
 
-            # get ratings related to pratilipis
-            ratings = cognition.get_ratings(pratilipi_ids)
-            rating_dict = _object_to_dict(ratings)
+            if len(pratilipis) > 0:
+                # get authors related to pratilipis
+                author_ids = ",".join([str(x['author_id']) for x in pratilipis])
+                authors = cognition.get_authors(author_ids)
+                author_dict = _object_to_dict(authors)
+
+                # get ratings related to pratilipis
+                ratings = cognition.get_ratings(pratilipi_ids)
+                rating_dict = _object_to_dict(ratings)
 
             offset = str(offset) + "-" + str(offset_similarity)
             response_kwargs = {'pratilipi_id_list' : pratilipi_ids_list,

@@ -100,3 +100,10 @@ def transform_request_v1(kwargs):
     kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
     kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
     return kwargs
+
+def transform_request_v2(kwargs):
+    kwargs['language'] = kwargs['language'][0] if 'language' in kwargs else None
+    kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else 0
+    kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
+    kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+    return kwargs
