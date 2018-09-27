@@ -541,27 +541,36 @@ def get_for_you(**kwargs):
     try:
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'hindi'
-        offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
+        query_offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
         response = {}
         # validate request
         validate_for_you_request(kwargs)
-
-        pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], offset)
+        pratilipis = []
         pratilipi_ids_list = []
         pratilipi_ids_similarity = {}
-        for x in pratilipi_similarity:
-            if x['pratilipi_1'] not in pratilipi_ids_list:
-                pratilipi_ids_list.append(x['pratilipi_1'])
-                pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
-            elif x['pratilipi_2'] not in pratilipi_ids_list:
-                pratilipi_ids_list.append(x['pratilipi_2'])
-                pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
+        pratilipi_ids = ""
+        offset = 0
+        offset_similarity = 0
+        count = 0
 
-        pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
-        if len(pratilipi_similarity) != 0:
+        while len(pratilipis) < 5 and count < 4:
+            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], query_offset)
+            for x in pratilipi_similarity:
+                if x['pratilipi_1'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_1'])
+                    pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
+                elif x['pratilipi_2'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_2'])
+                    pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
 
+            pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
             pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
+            count = count + 1
+            query_offset = str(offset) + "-" + str(offset_similarity)
+
+        print("count is", count)
+        if len(pratilipi_ids_list) != 0:
             pratilipi_dict = _dict_to_dict(pratilipis)
 
             author_dict = {}
@@ -586,6 +595,7 @@ def get_for_you(**kwargs):
                                'authors': author_dict,
                                'ratings': rating_dict,
                                'offset': offset,
+                               'count' : count,
                                'language': language}
             response = response_builder.for_you(response_kwargs)
 
