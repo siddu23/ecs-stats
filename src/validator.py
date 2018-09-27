@@ -1,6 +1,9 @@
+import __builtin__
+
 from exceptions import *
 from conf.config import LANGUAGE, AVAILABLE_PERIODS
 
+category_map = __builtin__.CATEGORY_MAP
 
 def validate_request(req):
     if req['language'] is None:
@@ -12,15 +15,8 @@ def validate_request(req):
     if req['language'].lower() not in LANGUAGE:
         raise LanguageInvalid
 
-def validate_read_time_request(req):
-    if req['language'] is None:
-        raise LanguageRequired
-
-    if req['category'] is None:
-        raise PratilipiNotFound
-
-    if req['language'].lower() not in LANGUAGE:
-        raise LanguageInvalid
+    if req['content_type'] is None or req['internal_category_name'] is None:
+        raise CategoryNotFound
 
 def validate_author_dashboard_request(req):
     if req['author_id'] is None:
