@@ -125,7 +125,7 @@ def get_read_time(**kwargs):
         kwargs = transform_request(kwargs)
 
         # validate request
-        validate_read_time_request(kwargs)
+        validate_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_read_time(kwargs)
@@ -168,6 +168,8 @@ def get_read_time(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -221,6 +223,8 @@ def get_high_rated(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
