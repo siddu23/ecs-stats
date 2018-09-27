@@ -1,4 +1,4 @@
-{
+CATEGORY_MAP = {
     "romance": {
         "STORY": {
             "HINDI": "lovestories",
