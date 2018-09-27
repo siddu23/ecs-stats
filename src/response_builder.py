@@ -319,6 +319,49 @@ def for_top_authors(kwargs):
 
     return json.dumps(response_dict)
 
+def for_author_leaderboard(kwargs):
+    """top authors"""
+    response_dict = {'authorList': []}
+    authors = kwargs['authors']
+    logged_user_id = kwargs['logged_user_id']
+
+    if len(authors) > 0:
+        response_dict['offset'] = kwargs['offset']
+
+    for author in authors:
+        response = {}
+        response = _set_key(response, 'authorId', author['author_id'])
+        response = _set_key(response, 'firstName', author['first_name'])
+        response = _set_key(response, 'name', author['first_name'])
+        response = _set_key(response, 'displayName', _author_name(author))
+        response = _set_key(response, 'profileImageUrl', supp_service.get_image_url(author['author_id'], author['profile_image'], 'image'))
+        response = _set_key(response, 'pageUrl', _author_slug_details(author))
+
+        data = supp_service.follow_details([author['author_id']], [logged_user_id], logged_user_id)
+        response = _set_key(response, 'following', data[author['author_id']]['following'] if data != {} else False)
+        response = _set_key(response, 'followCount', data[author['author_id']]['followersCount'] if data != {} else 0)
+        response_dict['authorList'].append(response)
+
+    if kwargs['rank_data'] != None:
+        response_dict['rankData'] = {}
+        response_dict['rankData']['rank'] = kwargs['rank_data']['rank'] + 1 #because ranks are stored from 0 in redis
+
+        rank_data = {}
+        rank_data = _set_key(rank_data, 'authorId', kwargs['rank_data']['data']['author_id'])
+        rank_data = _set_key(rank_data, 'firstName', kwargs['rank_data']['data']['first_name'])
+        rank_data = _set_key(rank_data, 'name', kwargs['rank_data']['data']['first_name'])
+        rank_data = _set_key(rank_data, 'displayName', _author_name(kwargs['rank_data']['data']))
+        rank_data = _set_key(rank_data, 'profileImageUrl', supp_service.get_image_url(kwargs['rank_data']['data']['author_id'], kwargs['rank_data']['data']['profile_image'], 'image'))
+        rank_data = _set_key(rank_data, 'pageUrl', _author_slug_details(kwargs['rank_data']['data']))
+
+        data = supp_service.follow_details([kwargs['rank_data']['data']['author_id']], [logged_user_id], logged_user_id)
+        rank_data = _set_key(rank_data, 'following', data[kwargs['rank_data']['data']['author_id']]['following'] if data != {} else False)
+        rank_data = _set_key(rank_data, 'followCount', data[kwargs['rank_data']['data']['author_id']]['followersCount'] if data != {} else 0)
+        response_dict['rankData']['data'] = rank_data
+
+
+    return json.dumps(response_dict)
+
 def for_reader_score(kwargs):
     """reader score response"""
     response = {}
