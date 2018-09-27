@@ -185,8 +185,9 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                 AND a.type = '{}'
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -202,11 +203,12 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
+                 AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.updated_at desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -239,8 +241,8 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                 AND a.type = '{}'
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -259,11 +261,11 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
+                 AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.reading_time desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -301,11 +303,11 @@ def get_high_rated(kwargs):
                                               AND a.language = '{}'
                                               AND b.name_en = '{}'
                                               AND b.type = 'SYSTEM'
-                                              AND a.type = 'STORY'
+                                              AND a.type = '{}'
                                               AND a.reading_time BETWEEN {} AND {})
                        GROUP BY 1
                        HAVING avg_rating > 3.9
-                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -324,14 +326,14 @@ def get_high_rated(kwargs):
                                                AND a.language = '{}'
                                                AND b.name_en = '{}'
                                                AND b.type = 'SYSTEM'
-                                               AND a.type = 'STORY'
+                                               AND a.type = '{}'
                                                AND a.reading_time BETWEEN {} AND {})
                  GROUP BY 1
                  HAVING avg_rating > 3.9
                  AND no_of_rating > 19
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
@@ -734,10 +736,45 @@ def get_top_authors(language, period, offset, limit):
 
     return obj_list
 
-def get_user_rank(language, period, user_id):
+def get_top_author_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank_json = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+        print(user_id)
+        print(user_rank_json)
+        user_rank_data = None
+        if user_rank_json != None:
+            user_rank_data = json.loads(user_rank_json)
+
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return user_rank_data
+
+def get_author_leaderboard(language, period, offset, limit):
+    try:
+        conn = connect_redis()
+
+        obj_list = []
+        for rank in range(offset, offset + limit):
+            author_data = conn.hget('ecsstats:author_leaderboard:authors:{}:{}'.format(language, period), rank)
+            if author_data == None:
+                break
+            obj_list.append(json.loads(author_data))
+
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return obj_list
+
+def get_author_leaderboard_rank(language, period, user_id):
+    try:
+        conn = connect_redis()
+        user_rank_json = conn.hget('ecsstats:author_leaderboard:ranks:{}:{}'.format(language, period), user_id)
         print(user_id)
         print(user_rank_json)
         user_rank_data = None
@@ -856,6 +893,7 @@ def get_continue_reading(kwargs):
 
         # fetch data
         user_id = kwargs['user_id']
+        language = kwargs['language']
         limit = kwargs['limit']
         offset = kwargs['offset']
         total_pratilipis = 0
@@ -877,8 +915,9 @@ def get_continue_reading(kwargs):
                  AND b.date_updated BETWEEN CURRENT_TIMESTAMP() - INTERVAL 60 DAY AND CURRENT_TIMESTAMP() - INTERVAL 1 DAY
                  AND c.state = 'PUBLISHED'
                  AND c.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND c.language = '{}'
                  AND d.user_id = {}
-                 AND d.property = 'READ_WORD_COUNT'""".format(user_id, user_id)
+                 AND d.property = 'READ_WORD_COUNT'""".format(user_id, language, user_id)
         cursor.execute(sql)
         library_set = cursor.fetchall()
         total_pratilipis = cursor.rowcount
@@ -897,7 +936,8 @@ def get_continue_reading(kwargs):
                  AND b.state = 'PUBLISHED'
                  AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND b.reading_time > 0
-                 AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id)
+                 AND b.language = '{}'
+                 AND a.property_value*60*100/b.reading_time BETWEEN 50 AND 90""".format(user_id, language)
         cursor.execute(sql)
         read_set = cursor.fetchall()
         total_pratilipis = total_pratilipis + cursor.rowcount

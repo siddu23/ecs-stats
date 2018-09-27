@@ -58,6 +58,11 @@ server {
         proxy_no_cache 1;
     }
 
+    location /stats/v1.0/author_leaderboard {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_no_cache 1;
+    }
+
     location /stats/v1.0/continue_reading {
         proxy_pass http://unix:/service/service.sock;
         proxy_cache_min_uses 1;

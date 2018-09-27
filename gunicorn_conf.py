@@ -6,6 +6,7 @@ from os import environ, path
 sys.path.append( path.dirname( path.abspath(__file__) ) )
 import __builtin__
 from conf.config import DB_REPLICA
+from conf.category_map import CATEGORY_MAP
 
 from gevent import monkey
 monkey.patch_all(thread=False, socket=False)
@@ -46,6 +47,17 @@ def post_fork(server, worker):
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     __builtin__.CONN_RO = connection
+
+    data = {}
+    for category in CATEGORY_MAP:
+        for content_type in CATEGORY_MAP[category]:
+            for lang in CATEGORY_MAP[category][content_type]:
+                end_point = CATEGORY_MAP[category][content_type][lang]
+                k = "{}|{}".format(lang.upper(), end_point.lower())
+                data[k] = (content_type.upper(), category.lower())
+    __builtin__.CATEGORY_MAP = data
+    print data
+
     print "gunicorn worker conneted to db"
 
 def worker_exit(server, worker):

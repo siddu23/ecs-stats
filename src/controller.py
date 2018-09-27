@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from bottle import response, hook
-from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_top_authors
+from commonfns import request_parser, log, timeit, transform_request, transform_request_v1, transform_request_v2, transform_request_top_authors
 from exceptions import *
 from validator import *
 from pprint import pprint as p
@@ -108,6 +108,8 @@ def get_recent_published(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except LanguageInvalid as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -123,7 +125,7 @@ def get_read_time(**kwargs):
         kwargs = transform_request(kwargs)
 
         # validate request
-        validate_read_time_request(kwargs)
+        validate_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_read_time(kwargs)
@@ -166,6 +168,8 @@ def get_read_time(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -219,6 +223,8 @@ def get_high_rated(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -346,7 +352,7 @@ def get_top_authors(**kwargs):
         language = kwargs['language'].upper()
 
         authors = cognition.get_top_authors(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
-        rank_data = cognition.get_user_rank(language, kwargs['period'], user_id)
+        rank_data = cognition.get_top_author_rank(language, kwargs['period'], user_id)
 
         response = response_builder.for_top_authors({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
         return bottle.HTTPResponse(status=200, body=response)
@@ -358,6 +364,32 @@ def get_top_authors(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+@timeit
+@request_parser
+def get_author_leaderboard(**kwargs):
+    """ Top authors """
+    try:
+        # query param
+        kwargs = transform_request_top_authors(kwargs)
+        user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        print kwargs
+
+        # validate request
+        validate_top_authors_request(kwargs)
+        language = kwargs['language'].upper()
+
+        authors = cognition.get_author_leaderboard(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
+        rank_data = cognition.get_author_leaderboard_rank(language, kwargs['period'], user_id)
+
+        response = response_builder.for_author_leaderboard({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
+        return bottle.HTTPResponse(status=200, body=response)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except LanguageInvalid as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
 @timeit
 @request_parser
@@ -474,7 +506,7 @@ def get_continue_reading(**kwargs):
     """get continue reading"""
     try:
         # query param
-        kwargs = transform_request_v1(kwargs)
+        kwargs = transform_request_v2(kwargs)
 
         # validate request
         validate_continue_reading_request(kwargs)
@@ -482,29 +514,16 @@ def get_continue_reading(**kwargs):
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_continue_reading(kwargs)
 
-        # get authors related to pratilipis
-        author_ids = _join_authorids(pratilipis)
-        authors = cognition.get_authors(author_ids)
-        author_dict = _object_to_dict(authors)
+        response_kwargs = { 'pratilipis': pratilipis, 'total_pratilipis': total_pratilipis, 'limit': kwargs['limit'], 'offset': kwargs['offset'] }
 
-        # get ratings related to pratilipis
-        pratilipi_ids = _join_pratilipiids(pratilipis)
-        ratings = cognition.get_ratings(pratilipi_ids)
-        rating_dict = _object_to_dict(ratings)
-
-        response_kwargs = { 'pratilipis': pratilipis,
-                            'authors': author_dict,
-                            'ratings': rating_dict,
-                            'librarys': {},
-                            'total_pratilipis': total_pratilipis,
-                            'limit': kwargs['limit'],
-                            'offset': kwargs['offset'] }
-
-        response = response_builder.for_all(response_kwargs)
-
+        response = response_builder.for_continue_reading(response_kwargs)
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except LanguageInvalid as err:
         return bottle.HTTPResponse(status=400)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
