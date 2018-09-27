@@ -89,3 +89,10 @@ class PeriodInvalid(Exception):
         self.message = 'invalid period in request'
     def __str__(self):
         return str(self.message)
+
+class CategoryNotFound(Exception):
+    def __init__(self):
+        self.message = 'category not found'
+    def __str__(self):
+        return str(self.message)
+
