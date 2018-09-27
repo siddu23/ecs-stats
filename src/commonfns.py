@@ -1,6 +1,7 @@
 import re
 import os
 import time
+import __builtin__
 
 from datetime import datetime
 from functools import wraps
@@ -85,6 +86,17 @@ def transform_request(kwargs):
     kwargs['user_id'] = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
     kwargs['limit'] = int(kwargs['limit'][0]) if 'limit' in kwargs else 20
     kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
+    kwargs['content_type'] = None
+    kwargs['internal_category_name'] = None
+
+    if kwargs['language'] is not None and kwargs['category'] is not None:
+        category_map = __builtin__.CATEGORY_MAP
+        category_key = "{}|{}".format(kwargs['language'].upper(), kwargs['category'].lower())
+        category_data = category_map[category_key] if category_key in category_map else None
+
+        if category_data is not None:
+            kwargs['content_type'] = category_data[0]
+            kwargs['internal_category_name'] = category_data[1]
     return kwargs
 
 def transform_request_top_authors(kwargs):
