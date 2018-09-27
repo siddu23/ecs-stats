@@ -364,7 +364,8 @@ def get_top_authors(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
-
+@timeit
+@request_parser
 def get_author_leaderboard(**kwargs):
     """ Top authors """
     try:
@@ -380,7 +381,7 @@ def get_author_leaderboard(**kwargs):
         authors = cognition.get_author_leaderboard(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
         rank_data = cognition.get_author_leaderboard_rank(language, kwargs['period'], user_id)
 
-        response = response_builder.for_top_authors({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
+        response = response_builder.for_author_leaderboard({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
