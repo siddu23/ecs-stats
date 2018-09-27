@@ -176,6 +176,15 @@ def get_recent_published(kwargs):
         conn = connectdb()
         cursor = conn.cursor()
 
+        category_map = __builtin__.CATEGORY_MAP
+        category_key = "{}|{}".format(kwargs['language'].upper(), kwargs['category'])
+        category_data = category_map[category_key] if category_key in category_map else None
+
+        if category_data is None: raise CategoryNotFound
+
+        category_content_type = category_data[0]
+        category_name = category_data[1]
+
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                  WHERE a.id = c.pratilipi_id
@@ -185,8 +194,9 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                 AND a.type = '{}'
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], category_name, category_content_type, kwargs['from_sec'], kwargs['to_sec'])
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -202,13 +212,16 @@ def get_recent_published(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
+                 AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.updated_at desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], category_name, category_content_type, kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
+    except CategoryNotFound as err:
+        raise CategoryNotFound
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except Exception as err:
