@@ -25,6 +25,9 @@ def app_routes(app):
     # /stats/v1.0/top_authors
     app.route('/stats/v1.0/top_authors', ['GET', 'OPTIONS'], controller.get_top_authors)
 
+    # /stats/v1.0/author_leaderboard
+    app.route('/stats/v1.0/author_leaderboard', ['GET', 'OPTIONS'], controller.get_author_leaderboard)
+
     # /authors/recommendation
     app.route('/authors/recommendation', ['GET'], controller.get_author_recommendations)
 

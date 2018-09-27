@@ -734,10 +734,45 @@ def get_top_authors(language, period, offset, limit):
 
     return obj_list
 
-def get_user_rank(language, period, user_id):
+def get_top_author_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank_json = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
+        print(user_id)
+        print(user_rank_json)
+        user_rank_data = None
+        if user_rank_json != None:
+            user_rank_data = json.loads(user_rank_json)
+
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return user_rank_data
+
+def get_author_leaderboard(language, period, offset, limit):
+    try:
+        conn = connect_redis()
+
+        obj_list = []
+        for rank in range(offset, offset + limit):
+            author_data = conn.hget('ecsstats:author_leaderboard:authors:{}:{}'.format(language, period), rank)
+            if author_data == None:
+                break
+            obj_list.append(json.loads(author_data))
+
+    except Exception as err:
+        raise RedisConnectionError(err)
+    finally:
+        disconnect_redis(conn)
+
+    return obj_list
+
+def get_author_leaderboard_rank(language, period, user_id):
+    try:
+        conn = connect_redis()
+        user_rank_json = conn.hget('ecsstats:author_leaderboard:ranks:{}:{}'.format(language, period), user_id)
         print(user_id)
         print(user_rank_json)
         user_rank_data = None
