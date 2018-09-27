@@ -360,7 +360,8 @@ def get_top_authors(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
-
+@timeit
+@request_parser
 def get_author_leaderboard(**kwargs):
     """ Top authors """
     try:
