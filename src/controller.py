@@ -348,7 +348,7 @@ def get_top_authors(**kwargs):
         language = kwargs['language'].upper()
 
         authors = cognition.get_top_authors(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
-        rank_data = cognition.get_user_rank(language, kwargs['period'], user_id)
+        rank_data = cognition.get_top_author_rank(language, kwargs['period'], user_id)
 
         response = response_builder.for_top_authors({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
         return bottle.HTTPResponse(status=200, body=response)
@@ -360,6 +360,31 @@ def get_top_authors(**kwargs):
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
+
+def get_author_leaderboard(**kwargs):
+    """ Top authors """
+    try:
+        # query param
+        kwargs = transform_request_top_authors(kwargs)
+        user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
+        print kwargs
+
+        # validate request
+        validate_top_authors_request(kwargs)
+        language = kwargs['language'].upper()
+
+        authors = cognition.get_author_leaderboard(language, kwargs['period'], kwargs['offset'], kwargs['limit'])
+        rank_data = cognition.get_author_leaderboard_rank(language, kwargs['period'], user_id)
+
+        response = response_builder.for_top_authors({ 'authors': authors, 'rank_data': rank_data, 'logged_user_id': user_id, 'offset': kwargs['offset'] + kwargs['limit'] })
+        return bottle.HTTPResponse(status=200, body=response)
+    except LanguageRequired as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except LanguageInvalid as err:
+        return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
 
 @timeit
 @request_parser
