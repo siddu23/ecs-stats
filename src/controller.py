@@ -108,6 +108,8 @@ def get_recent_published(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except LanguageInvalid as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
