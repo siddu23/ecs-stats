@@ -187,7 +187,6 @@ def get_recent_published(kwargs):
                  AND b.type = 'SYSTEM'
                  AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -208,7 +207,6 @@ def get_recent_published(kwargs):
                  ORDER BY a.updated_at desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -243,7 +241,6 @@ def get_read_time(kwargs):
                  AND b.type = 'SYSTEM'
                  AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -267,7 +264,6 @@ def get_read_time(kwargs):
                  ORDER BY a.reading_time desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -310,7 +306,6 @@ def get_high_rated(kwargs):
                        GROUP BY 1
                        HAVING avg_rating > 3.9
                        AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -337,7 +332,6 @@ def get_high_rated(kwargs):
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
                  OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
