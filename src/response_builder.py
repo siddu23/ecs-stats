@@ -215,6 +215,7 @@ def for_you(kwargs):
     ratings = kwargs['ratings']
     pratilipi_id_list = kwargs['pratilipi_id_list']
     response_dict = { "for_you":[]}
+    count = kwargs['count']
 
     for id in pratilipi_id_list:
         if int(id) in pratilipis:
@@ -266,6 +267,11 @@ def for_you(kwargs):
         response_dict['finished'] = True
     else:
         response_dict['finished'] = False
+
+    if count > 3:
+        response_dict['numberFound'] = len(pratilipi_id_list)
+    else:
+        response_dict['numberFound'] = 200
     return response_dict
 
 def for_top_authors(kwargs):
