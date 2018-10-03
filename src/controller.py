@@ -449,10 +449,11 @@ def get_most_active_authors(**kwargs):
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else None
         offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
+        limit = kwargs['limit'][0] if 'limit' in kwargs else 10
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
 
         if language is not None:
-            ids = cognition.get_most_active_authors_list(language, offset)
+            ids = cognition.get_most_active_authors_list(language, offset, limit)
             print(ids)
         else:
             return bottle.HTTPResponse(status=400, body={"message": "Language is required"})

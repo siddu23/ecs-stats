@@ -787,7 +787,7 @@ def get_author_leaderboard_rank(language, period, user_id):
     return user_rank_data
 
 
-def get_most_active_authors_list(language, offset):
+def get_most_active_authors_list(language, offset, limit):
     try:
         conn = connectdb()
         cursor = conn.cursor()
@@ -797,7 +797,7 @@ def get_most_active_authors_list(language, offset):
 
         sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi
             where language='{}' AND state='PUBLISHED' AND reading_time > 60 AND published_at > '{}' AND published_at < '{}'
-            group by author_id order by rank desc limit 20""".format(language, day1, day2)
+            group by author_id order by rank desc limit {} offset {}""".format(language, day1, day2, limit, offset)
 
         cursor.execute(sql)
         record_set = cursor.fetchall()

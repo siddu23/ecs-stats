@@ -204,7 +204,7 @@ def for_author_recommendations(kwargs):
     if bucket is not None:
         meta['algorithmId'] = bucket
     if cursor is not None:
-        response_dict['cursor'] = str(20 + int(cursor))
+        response_dict['cursor'] = str(10 + int(cursor))
 
     response_dict['meta'] = meta
     return json.dumps(response_dict)
