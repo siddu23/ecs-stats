@@ -773,7 +773,14 @@ def get_author_leaderboard(language, period, offset, limit):
             author_data = conn.hget('ecsstats:author_leaderboard:authors:{}:{}'.format(language, period), rank)
             if author_data == None:
                 break
-            obj_list.append(json.loads(author_data))
+
+            if period == 7:
+                obj_list.append(json.loads(author_data)[:20])
+            elif period == 30:
+                obj_list.append(json.loads(author_data)[:50])
+            else:
+                obj_list.append(json.loads(author_data)[:100])
+
 
     except Exception as err:
         raise RedisConnectionError(err)
