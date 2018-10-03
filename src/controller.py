@@ -125,7 +125,7 @@ def get_read_time(**kwargs):
         kwargs = transform_request(kwargs)
 
         # validate request
-        validate_read_time_request(kwargs)
+        validate_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_read_time(kwargs)
@@ -168,6 +168,8 @@ def get_read_time(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -221,6 +223,8 @@ def get_high_rated(**kwargs):
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except ToSecRequired as err:
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
+    except CategoryNotFound as err:
+        return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
         return bottle.HTTPResponse(status=404)
     except Exception as err:
@@ -396,7 +400,6 @@ def get_user_feed(**kwargs):
         offset = int(kwargs['offset'][0]) if kwargs.has_key('offset') else 0
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'HINDI'
         feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset, language)
-
         response = {}
         response['finished'] = True
         response['feedList'] = []
@@ -410,7 +413,7 @@ def get_user_feed(**kwargs):
             # get authors related to pratilipis
             author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
             # user_ids = ",".join([str(x['activity_initiated_by']) for x in filter(lambda x: x['activity_type'] == 'RATED', feed_pratilipi_list)])
-            user_ids = []
+            user_ids = ",".join([str(x['activity_initiated_by']) for x in feed_pratilipi_list if x['activity_type'] == "RATED"])
 
             authors = cognition.get_authors_for_feed(author_ids, user_ids)
             author_dict = _object_to_dict(authors)
@@ -445,10 +448,11 @@ def get_most_active_authors(**kwargs):
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else None
         offset = kwargs['cursor'][0] if 'cursor' in kwargs else 0
+        limit = kwargs['limit'][0] if 'limit' in kwargs else 10
         user_id = int(kwargs['logged_user_id']) if 'logged_user_id' in kwargs else 0
 
         if language is not None:
-            ids = cognition.get_most_active_authors_list(language, offset)
+            ids = cognition.get_most_active_authors_list(language, offset, limit)
             print(ids)
         else:
             return bottle.HTTPResponse(status=400, body={"message": "Language is required"})
@@ -556,27 +560,36 @@ def get_for_you(**kwargs):
     try:
         # query param
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'hindi'
-        offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
+        query_offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
         kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
         response = {}
         # validate request
         validate_for_you_request(kwargs)
-
-        pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], offset)
+        pratilipis = []
         pratilipi_ids_list = []
         pratilipi_ids_similarity = {}
-        for x in pratilipi_similarity:
-            if x['pratilipi_1'] not in pratilipi_ids_list:
-                pratilipi_ids_list.append(x['pratilipi_1'])
-                pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
-            elif x['pratilipi_2'] not in pratilipi_ids_list:
-                pratilipi_ids_list.append(x['pratilipi_2'])
-                pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
+        pratilipi_ids = ""
+        offset = 0
+        offset_similarity = 0
+        count = 0
 
-        pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
-        if len(pratilipi_similarity) != 0:
+        while len(pratilipis) < 5 and count < 4:
+            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], query_offset)
+            for x in pratilipi_similarity:
+                if x['pratilipi_1'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_1'])
+                    pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
+                elif x['pratilipi_2'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_2'])
+                    pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
 
+            pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
             pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
+            count = count + 1
+            query_offset = str(offset) + "-" + str(offset_similarity)
+
+        print("count is", count)
+        if len(pratilipi_ids_list) != 0:
             pratilipi_dict = _dict_to_dict(pratilipis)
 
             author_dict = {}
@@ -601,8 +614,57 @@ def get_for_you(**kwargs):
                                'authors': author_dict,
                                'ratings': rating_dict,
                                'offset': offset,
+                               'count' : count,
                                'language': language}
             response = response_builder.for_you(response_kwargs)
+
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+
+@timeit
+@request_parser
+def get_for_you_init(**kwargs):
+    """ Reader dashboard statistics """
+    try:
+        # query param
+        language = kwargs['language'][0].lower() if 'language' in kwargs else 'hindi'
+        query_offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
+        kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
+        # validate request
+        validate_for_you_request(kwargs)
+
+        pratilipis = []
+        pratilipi_ids_list = []
+        pratilipi_ids_similarity = {}
+        count = 0
+
+        while len(pratilipis) < 5 and count < 4:
+            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], query_offset)
+            for x in pratilipi_similarity:
+                if x['pratilipi_1'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_1'])
+                    pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
+                elif x['pratilipi_2'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_2'])
+                    pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
+
+            pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
+            pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
+            count = count + 1
+            query_offset = str(offset) + "-" + str(offset_similarity)
+
+        pratilipi_ids_list = [str(x['id']) for x in pratilipis]
+        response = {
+            'ids' : pratilipi_ids_list,
+            'offset' : query_offset,
+            'total' : 150,
+            'limit' : 6
+        }
 
         return bottle.HTTPResponse(status=200, body=response)
     except UserIdRequired as err:

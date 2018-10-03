@@ -176,15 +176,6 @@ def get_recent_published(kwargs):
         conn = connectdb()
         cursor = conn.cursor()
 
-        category_map = __builtin__.CATEGORY_MAP
-        category_key = "{}|{}".format(kwargs['language'].upper(), kwargs['category'])
-        category_data = category_map[category_key] if category_key in category_map else None
-
-        if category_data is None: raise CategoryNotFound
-
-        category_content_type = category_data[0]
-        category_name = category_data[1]
-
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                  WHERE a.id = c.pratilipi_id
@@ -195,8 +186,7 @@ def get_recent_published(kwargs):
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
                  AND a.type = '{}'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], category_name, category_content_type, kwargs['from_sec'], kwargs['to_sec'])
-        print sql
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -216,12 +206,9 @@ def get_recent_published(kwargs):
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.updated_at desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], category_name, category_content_type, kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
-        print sql
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
-    except CategoryNotFound as err:
-        raise CategoryNotFound
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except Exception as err:
@@ -252,8 +239,8 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                 AND a.type = '{}'
+                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -272,11 +259,11 @@ def get_read_time(kwargs):
                  AND a.language = '{}'
                  AND b.name_en = '{}'
                  AND b.type = 'SYSTEM'
-                 AND a.type = 'STORY'
+                 AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  ORDER BY a.reading_time desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -314,11 +301,11 @@ def get_high_rated(kwargs):
                                               AND a.language = '{}'
                                               AND b.name_en = '{}'
                                               AND b.type = 'SYSTEM'
-                                              AND a.type = 'STORY'
+                                              AND a.type = '{}'
                                               AND a.reading_time BETWEEN {} AND {})
                        GROUP BY 1
                        HAVING avg_rating > 3.9
-                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'])
+                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -337,14 +324,14 @@ def get_high_rated(kwargs):
                                                AND a.language = '{}'
                                                AND b.name_en = '{}'
                                                AND b.type = 'SYSTEM'
-                                               AND a.type = 'STORY'
+                                               AND a.type = '{}'
                                                AND a.reading_time BETWEEN {} AND {})
                  GROUP BY 1
                  HAVING avg_rating > 3.9
                  AND no_of_rating > 19
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['category'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
@@ -807,7 +794,7 @@ def get_author_leaderboard_rank(language, period, user_id):
     return user_rank_data
 
 
-def get_most_active_authors_list(language, offset):
+def get_most_active_authors_list(language, offset, limit):
     try:
         conn = connectdb()
         cursor = conn.cursor()
@@ -817,7 +804,7 @@ def get_most_active_authors_list(language, offset):
 
         sql = """ SELECT author_id, count(*) as rank FROM pratilipi.pratilipi
             where language='{}' AND state='PUBLISHED' AND reading_time > 60 AND published_at > '{}' AND published_at < '{}'
-            group by author_id order by rank desc limit 20""".format(language, day1, day2)
+            group by author_id order by rank desc limit {} offset {}""".format(language, day1, day2, limit, offset)
 
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -1150,7 +1137,7 @@ def get_for_you(user_id, offset):
             elif offset > 0:
                 # used up all pratilipis read by user with 3 highest similar
                 offset = 0
-                offset_similarity = offset_similarity + 3
+                offset_similarity = offset_similarity + 5
 
             sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi
                             where user_id = {}
@@ -1167,7 +1154,7 @@ def get_for_you(user_id, offset):
             sql = """ SELECT * FROM similarity.pratilipi_similarity
                     where pratilipi_1 = {}
                     OR pratilipi_2 = {}
-                    order by similarity desc limit 3 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
+                    order by similarity desc limit 5 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
             print(sql)
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()

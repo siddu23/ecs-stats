@@ -45,3 +45,6 @@ def app_routes(app):
 
     # /stats/v1.0/for_you?userid=12345
     app.route('/stats/v1.0/for_you', ['GET'], controller.get_for_you)
+
+    # /stats/v1.0/for_you_init?userid=12345&langage=hindi
+    app.route('/stats/v1.0/for_you_init', ['GET'], controller.get_for_you_init)

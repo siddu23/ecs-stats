@@ -204,7 +204,7 @@ def for_author_recommendations(kwargs):
     if bucket is not None:
         meta['algorithmId'] = bucket
     if cursor is not None:
-        response_dict['cursor'] = str(20 + int(cursor))
+        response_dict['cursor'] = str(10 + int(cursor))
 
     response_dict['meta'] = meta
     return json.dumps(response_dict)
@@ -215,6 +215,7 @@ def for_you(kwargs):
     ratings = kwargs['ratings']
     pratilipi_id_list = kwargs['pratilipi_id_list']
     response_dict = { "for_you":[]}
+    count = kwargs['count']
 
     for id in pratilipi_id_list:
         if int(id) in pratilipis:
@@ -266,6 +267,11 @@ def for_you(kwargs):
         response_dict['finished'] = True
     else:
         response_dict['finished'] = False
+
+    if count > 3:
+        response_dict['numberFound'] = len(pratilipi_id_list)
+    else:
+        response_dict['numberFound'] = 200
     return response_dict
 
 def for_top_authors(kwargs):
@@ -394,17 +400,26 @@ def for_user_feed(kwargs):
         if feed['activity_reference_id'] in pratilipis:
             pratilipi = pratilipis[feed['activity_reference_id']]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
-
-            # if feed['activity_type'] == 'RATED':
-            #     for x in authors:
-            #         if authors[x]['user_id'] == feed['activity_initiated_by']:
-            #             author = authors[x]
-            #             break
-            # else:
             author = authors[pratilipi['author_id']]
 
 
             response_object = {}
+
+            if feed['activity_type'] == 'RATED':
+                for x in authors:
+                    if authors[x]['user_id'] == feed['activity_initiated_by']:
+                        data = {}
+                        data['authorId'] = authors[x]['id']
+                        data['displayName'] = _author_name(authors[x])
+                        data['pageUrl'] = _author_slug_details(authors[x])
+                        data['contentPublished'] = authors[x]['content_published']
+                        data['totalReadCount'] = authors[x]['total_read_count']
+                        data['profileImageUrl'] = supp_service.get_image_url(authors[x]['id'], authors[x]['profile_image'],
+                                                                             'image')
+                        data['slug'] = _author_slug_details(authors[x])
+                        response_object['ratedBy'] = data
+                        break
+
             response_pratilipi = {}
             response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
             response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi['title'])
