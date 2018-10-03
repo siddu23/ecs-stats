@@ -400,7 +400,6 @@ def get_user_feed(**kwargs):
         offset = int(kwargs['offset'][0]) if kwargs.has_key('offset') else 0
         language = kwargs['language'][0].lower() if 'language' in kwargs else 'HINDI'
         feed_pratilipi_list, offset = cognition.get_user_feed(kwargs['logged_user_id'], offset, language)
-
         response = {}
         response['finished'] = True
         response['feedList'] = []
@@ -414,7 +413,7 @@ def get_user_feed(**kwargs):
             # get authors related to pratilipis
             author_ids = ",".join([str(x['author_id']) for x in feed_pratilipi_list])
             # user_ids = ",".join([str(x['activity_initiated_by']) for x in filter(lambda x: x['activity_type'] == 'RATED', feed_pratilipi_list)])
-            user_ids = []
+            user_ids = ",".join([str(x['activity_initiated_by']) for x in feed_pratilipi_list if x['activity_type'] == "RATED"])
 
             authors = cognition.get_authors_for_feed(author_ids, user_ids)
             author_dict = _object_to_dict(authors)

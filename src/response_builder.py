@@ -400,17 +400,17 @@ def for_user_feed(kwargs):
         if feed['activity_reference_id'] in pratilipis:
             pratilipi = pratilipis[feed['activity_reference_id']]
             rating = ratings[str(pratilipi['id'])]['avg_rating'] if str(pratilipi['id']) in ratings else 0
-
-            # if feed['activity_type'] == 'RATED':
-            #     for x in authors:
-            #         if authors[x]['user_id'] == feed['activity_initiated_by']:
-            #             author = authors[x]
-            #             break
-            # else:
             author = authors[pratilipi['author_id']]
 
 
             response_object = {}
+
+            if feed['activity_type'] == 'RATED':
+                for x in authors:
+                    if authors[x]['user_id'] == feed['activity_initiated_by']:
+                        response_object['activity_initiated_by'] = authors[x]
+                        break
+
             response_pratilipi = {}
             response_pratilipi = _set_key(response_pratilipi, 'pratilipiId', pratilipi['id'])
             response_pratilipi = _set_key(response_pratilipi, 'title', pratilipi['title'])
