@@ -624,3 +624,51 @@ def get_for_you(**kwargs):
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=500, body={"message": str(err)})
+
+
+@timeit
+@request_parser
+def get_for_you_init(**kwargs):
+    """ Reader dashboard statistics """
+    try:
+        # query param
+        language = kwargs['language'][0].lower() if 'language' in kwargs else 'hindi'
+        query_offset = kwargs['cursor'][0] if 'cursor' in kwargs else "0-0"
+        kwargs['user_id'] = int(kwargs['userid'][0]) if 'userid' in kwargs else None
+        # validate request
+        validate_for_you_request(kwargs)
+
+        pratilipis = []
+        pratilipi_ids_list = []
+        pratilipi_ids_similarity = {}
+        count = 0
+
+        while len(pratilipis) < 5 and count < 4:
+            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], query_offset)
+            for x in pratilipi_similarity:
+                if x['pratilipi_1'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_1'])
+                    pratilipi_ids_similarity[x['pratilipi_1']] = x['similarity']
+                elif x['pratilipi_2'] not in pratilipi_ids_list:
+                    pratilipi_ids_list.append(x['pratilipi_2'])
+                    pratilipi_ids_similarity[x['pratilipi_2']] = x['similarity']
+
+            pratilipi_ids = ",".join(str(x) for x in pratilipi_ids_list)
+            pratilipis = cognition.get_pratilipis_for_you(pratilipi_ids, kwargs['user_id'], language)
+            count = count + 1
+            query_offset = str(offset) + "-" + str(offset_similarity)
+
+        pratilipi_ids_list = [str(x['id']) for x in pratilipis]
+        response = {
+            'ids' : pratilipi_ids_list,
+            'offset' : query_offset,
+            'total' : 150,
+            'limit' : 6
+        }
+
+        return bottle.HTTPResponse(status=200, body=response)
+    except UserIdRequired as err:
+        return bottle.HTTPResponse(status=400)
+    except Exception as err:
+        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
+        return bottle.HTTPResponse(status=500, body={"message": str(err)})

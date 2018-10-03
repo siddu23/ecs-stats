@@ -1130,7 +1130,7 @@ def get_for_you(user_id, offset):
             elif offset > 0:
                 # used up all pratilipis read by user with 3 highest similar
                 offset = 0
-                offset_similarity = offset_similarity + 3
+                offset_similarity = offset_similarity + 5
 
             sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi
                             where user_id = {}
@@ -1147,7 +1147,7 @@ def get_for_you(user_id, offset):
             sql = """ SELECT * FROM similarity.pratilipi_similarity
                     where pratilipi_1 = {}
                     OR pratilipi_2 = {}
-                    order by similarity desc limit 3 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
+                    order by similarity desc limit 5 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
             print(sql)
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()
