@@ -408,7 +408,16 @@ def for_user_feed(kwargs):
             if feed['activity_type'] == 'RATED':
                 for x in authors:
                     if authors[x]['user_id'] == feed['activity_initiated_by']:
-                        response_object['activity_initiated_by'] = authors[x]
+                        data = {}
+                        data['authorId'] = authors[x]['id']
+                        data['displayName'] = _author_name(authors[x])
+                        data['pageUrl'] = _author_slug_details(authors[x])
+                        data['contentPublished'] = authors[x]['content_published']
+                        data['totalReadCount'] = authors[x]['total_read_count']
+                        data['profileImageUrl'] = supp_service.get_image_url(authors[x]['id'], authors[x]['profile_image'],
+                                                                             'image')
+                        data['slug'] = _author_slug_details(authors[x])
+                        response_object['ratedBy'] = data
                         break
 
             response_pratilipi = {}
