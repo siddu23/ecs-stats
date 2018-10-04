@@ -20,6 +20,7 @@ server {
         proxy_cache_min_uses 1;
         proxy_cache_valid 200 1200m;
         proxy_cache_key $request_uri;
+        proxy_cache_bypass $http_secret_header;
     }
 
     location /stats/v1.0/high_rated {
@@ -27,6 +28,7 @@ server {
         proxy_cache_min_uses 1;
         proxy_cache_valid 200 1200m;
         proxy_cache_key $request_uri;
+        proxy_cache_bypass $http_secret_header;
     }
 
     location /stats/v1.0/read_time {
@@ -34,6 +36,7 @@ server {
         proxy_cache_min_uses 1;
         proxy_cache_valid 200 1200m;
         proxy_cache_key $request_uri;
+        proxy_cache_bypass $http_secret_header;
     }
 
     location /stats/v1.0/author_dashboard {
