@@ -193,6 +193,7 @@ def get_recent_published(kwargs):
                                                   kwargs['from_sec'], kwargs['to_sec'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -219,6 +220,7 @@ def get_recent_published(kwargs):
                                       kwargs['from_sec'], kwargs['to_sec'],
                                       kwargs['internal_category_name'],
                                       kwargs['language'] )
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
