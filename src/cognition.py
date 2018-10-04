@@ -756,18 +756,22 @@ def get_author_leaderboard(language, period, offset, limit):
         conn = connect_redis()
 
         obj_list = []
-        for rank in range(offset, offset + limit):
+
+        max_range = offset + limit
+        if period == 7 and max_range > 20:
+            max_range = 20
+
+        if period == 30 and max_range > 50:
+            max_range = 50
+
+        if period == 365 and max_range > 100:
+            max_range = 100
+
+        for rank in range(offset, max_range):
             author_data = conn.hget('ecsstats:author_leaderboard:authors:{}:{}'.format(language, period), rank)
             if author_data == None:
                 break
-
-            if period == 7:
-                obj_list.append(json.loads(author_data)[:20])
-            elif period == 30:
-                obj_list.append(json.loads(author_data)[:50])
-            else:
-                obj_list.append(json.loads(author_data)[:100])
-
+            obj_list.append(json.loads(author_data))
 
     except Exception as err:
         raise RedisConnectionError(err)
