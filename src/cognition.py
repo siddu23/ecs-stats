@@ -221,7 +221,8 @@ def get_recent_published(kwargs):
                                       kwargs['from_sec'], kwargs['to_sec'],
                                       kwargs['content_type'],
                                       kwargs['internal_category_name'],
-                                      kwargs['language'] )
+                                      kwargs['language'],
+                                      kwargs['limit'], kwargs['offset'] )
         print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
