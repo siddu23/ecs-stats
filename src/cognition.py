@@ -186,11 +186,12 @@ def get_recent_published(kwargs):
                  AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  AND b.type = 'SYSTEM'
-                 AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND b.content_type = '{}'
                  AND b.name_en = '{}'
                  AND b.language = '{}'""".format( kwargs['language'],
                                                   kwargs['content_type'],
                                                   kwargs['from_sec'], kwargs['to_sec'],
+                                                  kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
         print sql
@@ -210,7 +211,7 @@ def get_recent_published(kwargs):
                  AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
                  AND b.type = 'SYSTEM'
-                 AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND b.content_type = '{}'
                  AND b.name_en = '{}'
                  AND b.language = '{}'
                  ORDER BY a.updated_at desc
@@ -218,6 +219,7 @@ def get_recent_published(kwargs):
                  OFFSET {}""".format( kwargs['language'],
                                       kwargs['content_type'],
                                       kwargs['from_sec'], kwargs['to_sec'],
+                                      kwargs['content_type'],
                                       kwargs['internal_category_name'],
                                       kwargs['language'] )
         print sql
