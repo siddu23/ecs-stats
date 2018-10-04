@@ -183,10 +183,16 @@ def get_recent_published(kwargs):
                  AND a.state = 'PUBLISHED'
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND a.language = '{}'
-                 AND b.name_en = '{}'
-                 AND b.type = 'SYSTEM'
                  AND a.type = '{}'
-                 AND a.reading_time BETWEEN {} AND {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
+                 AND a.reading_time BETWEEN {} AND {}
+                 AND b.type = 'SYSTEM'
+                 AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND b.name_en = '{}'
+                 AND b.language = '{}'""".format( kwargs['language'],
+                                                  kwargs['content_type'],
+                                                  kwargs['from_sec'], kwargs['to_sec'],
+                                                  kwargs['internal_category_name'],
+                                                  kwargs['language'] )
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -200,13 +206,19 @@ def get_recent_published(kwargs):
                  AND a.state = 'PUBLISHED'
                  AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                  AND a.language = '{}'
-                 AND b.name_en = '{}'
-                 AND b.type = 'SYSTEM'
                  AND a.type = '{}'
                  AND a.reading_time BETWEEN {} AND {}
+                 AND b.type = 'SYSTEM'
+                 AND b.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
+                 AND b.name_en = '{}'
+                 AND b.language = '{}'
                  ORDER BY a.updated_at desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format( kwargs['language'],
+                                      kwargs['content_type'],
+                                      kwargs['from_sec'], kwargs['to_sec'],
+                                      kwargs['internal_category_name'],
+                                      kwargs['language'] )
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
