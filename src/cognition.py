@@ -309,20 +309,27 @@ def get_high_rated(kwargs):
                        FROM social.review d
                        WHERE d.reference_type = 'PRATILIPI'
                        AND d.state = 'PUBLISHED'
-                       AND d.reference_id IN (SELECT a.id
+                       AND d.reference_id IN (SELECT CONVERT(a.id, CHAR) as id
                                               FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                                               WHERE a.id = c.pratilipi_id
                                               AND b.id = c.category_id
                                               AND a.state = 'PUBLISHED'
                                               AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                                               AND a.language = '{}'
-                                              AND b.name_en = '{}'
-                                              AND b.type = 'SYSTEM'
                                               AND a.type = '{}'
-                                              AND a.reading_time BETWEEN {} AND {})
+                                              AND a.reading_time BETWEEN {} AND {}
+                                              AND b.type = 'SYSTEM'
+                                              AND b.content_type = '{}'
+                                              AND b.name_en = '{}'
+                                              AND b.language = '{}')
                        GROUP BY 1
                        HAVING avg_rating > 3.9
-                       AND no_of_rating > 19) AS x""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'])
+                       AND no_of_rating > 19) AS x""".format( kwargs['language'],
+                                                              kwargs['content_type'],
+                                                              kwargs['from_sec'], kwargs['to_sec'],
+                                                              kwargs['content_type'],
+                                                              kwargs['internal_category_name'],
+                                                              kwargs['language'] )
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -332,23 +339,32 @@ def get_high_rated(kwargs):
                  FROM social.review d
                  WHERE d.reference_type = 'PRATILIPI'
                  AND d.state = 'PUBLISHED'
-                 AND d.reference_id IN (SELECT a.id
+                 AND d.reference_id IN (SELECT CONVERT(a.id, CHAR) as id
                                                FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                                                WHERE a.id = c.pratilipi_id
                                                AND b.id = c.category_id
                                                AND a.state = 'PUBLISHED'
                                                AND a.content_type IN ('PRATILIPI', 'IMAGE', 'PDF')
                                                AND a.language = '{}'
-                                               AND b.name_en = '{}'
-                                               AND b.type = 'SYSTEM'
                                                AND a.type = '{}'
-                                               AND a.reading_time BETWEEN {} AND {})
+                                               AND a.reading_time BETWEEN {} AND {}
+                                               AND b.type = 'SYSTEM'
+                                               AND b.content_type = '{}'
+                                               AND b.name_en = '{}'
+                                               AND a.language = '{}')
                  GROUP BY 1
                  HAVING avg_rating > 3.9
                  AND no_of_rating > 19
                  ORDER BY avg_rating desc, no_of_rating desc
                  LIMIT {}
-                 OFFSET {}""".format(kwargs['language'], kwargs['internal_category_name'], kwargs['content_type'], kwargs['from_sec'], kwargs['to_sec'], kwargs['limit'], kwargs['offset'])
+                 OFFSET {}""".format( kwargs['language'],
+                                      kwargs['content_type'],
+                                      kwargs['from_sec'], kwargs['to_sec'],
+                                      kwargs['content_type'],
+                                      kwargs['internal_category_name'],
+                                      kwargs['language'],
+                                      kwargs['limit'],
+                                      kwargs['offset'] )
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
