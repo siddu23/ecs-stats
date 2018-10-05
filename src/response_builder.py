@@ -97,6 +97,7 @@ def for_all(kwargs):
     response = _set_key(response, 'found', kwargs['total_pratilipis'])
     response = _set_key(response, 'limit', kwargs['limit'])
     response = _set_key(response, 'offset', kwargs['offset'])
+    response = _set_key(response, 'title', kwargs['title'])
     response = _set_key(response, 'pratilipiList', [])
     for pratilipi in pratilipis:
         #add_to_lib = True if librarys.get(pratilipi.id, None) is None else False
