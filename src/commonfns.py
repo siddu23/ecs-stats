@@ -88,6 +88,7 @@ def transform_request(kwargs):
     kwargs['offset'] = int(kwargs['offset'][0]) if 'offset' in kwargs else 0
     kwargs['content_type'] = None
     kwargs['internal_category_name'] = None
+    kwargs['title'] = "List"
 
     if kwargs['language'] is not None and kwargs['category'] is not None:
         category_map = __builtin__.CATEGORY_MAP
@@ -97,6 +98,7 @@ def transform_request(kwargs):
         if category_data is not None:
             kwargs['content_type'] = category_data[0]
             kwargs['internal_category_name'] = category_data[1]
+            kwargs['title'] = category_data[2]
     return kwargs
 
 def transform_request_top_authors(kwargs):
