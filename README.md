@@ -7,6 +7,7 @@
     "found": 100,
     "limit": 100,
     "offset": 1,
+    "title": "List",
     "pratilipiList": [{
         "pratilipiId": 6755373518892391,
         "displayTitle": "लव @ ऑनलाइन",
@@ -37,6 +38,7 @@
     "found": 100,
     "limit": 100,
     "offset": 1,
+    "title": "List",
     "pratilipiList": [{
         "pratilipiId": 6755373518892391,
         "displayTitle": "लव @ ऑनलाइन",
@@ -67,6 +69,7 @@
     "found": 100,
     "limit": 100,
     "offset": 1,
+    "title": "List",
     "pratilipiList": [{
         "pratilipiId": 6755373518892391,
         "displayTitle": "लव @ ऑनलाइन",
