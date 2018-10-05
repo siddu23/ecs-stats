@@ -173,7 +173,7 @@ def get_authors_for_feed(author_ids, user_ids):
 def get_recent_published(kwargs):
     """get recent published"""
     try:
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
 
         sql = """SELECT COUNT(*) as cnt
@@ -194,7 +194,6 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -223,7 +222,6 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -244,7 +242,7 @@ def get_recent_published(kwargs):
 def get_read_time(kwargs):
     """get read time based"""
     try:
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
 
         sql = """SELECT COUNT(*) as cnt
@@ -301,7 +299,7 @@ def get_read_time(kwargs):
 def get_high_rated(kwargs):
     """get high rated pratilipi"""
     try:
-        conn = connectdb()
+        conn = connectdb_replica()
         cursor = conn.cursor()
 
         sql = """SELECT COUNT(*) as cnt
@@ -583,7 +581,6 @@ def get_user_feed(user_id, offset, language):
         conn = connectdb()
         cursor = conn.cursor()
         user_following_author_id_list, user_following_user_id_list = get_user_following(user_id, limit, conn)
-        print(user_following_author_id_list, user_following_user_id_list)
 
         if len(user_following_author_id_list) > 0:
             author_ids = ",".join(user_following_author_id_list)
@@ -595,7 +592,6 @@ def get_user_feed(user_id, offset, language):
                 OR (activity_initiated_by IN ({})
                 AND activity_type = 'RATED' ) ORDER BY activity_performed_at DESC LIMIT 20 OFFSET {};
             """.format(author_ids, author_user_ids, offset)
-            print(sql)
             cursor.execute(sql)
             record_set = cursor.fetchall()
 
@@ -656,7 +652,6 @@ def get_default_feed(time_delay, conn, language):
         sql = """SELECT id as activity_reference_id, user_id, author_id, 'PUBLISHED' as activity_type FROM pratilipi.pratilipi
         WHERE state='PUBLISHED' and language='{}' and published_at > '{}' and published_at < '{}'
         order by read_count desc limit 10""".format(language, day2, day1)
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
@@ -710,7 +705,6 @@ def get_pratilipis(pratilipi_id_list):
         AND state='PUBLISHED'
         AND NOT content_type = 'AUDIO'
          """.format(pratilipi_id_list)
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
@@ -737,7 +731,6 @@ def get_pratilipis_for_you(pratilipi_id_list, user_id, language):
         AND user_id != {}
         AND read_count > 200
          """.format(pratilipi_id_list, language, user_id)
-        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
         for i in record_set:
@@ -771,8 +764,6 @@ def get_top_author_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank_json = conn.hget('ecsstats:top_authors:ranks:{}:{}'.format(language, period), user_id)
-        print(user_id)
-        print(user_rank_json)
         user_rank_data = None
         if user_rank_json != None:
             user_rank_data = json.loads(user_rank_json)
@@ -817,8 +808,6 @@ def get_author_leaderboard_rank(language, period, user_id):
     try:
         conn = connect_redis()
         user_rank_json = conn.hget('ecsstats:author_leaderboard:ranks:{}:{}'.format(language, period), user_id)
-        print(user_id)
-        print(user_rank_json)
         user_rank_data = None
         if user_rank_json != None:
             user_rank_data = json.loads(user_rank_json)
@@ -1192,7 +1181,6 @@ def get_for_you(user_id, offset):
                     where pratilipi_1 = {}
                     OR pratilipi_2 = {}
                     order by similarity desc limit 5 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
-            print(sql)
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()
             pratilipi_similarity.extend(record_set)
