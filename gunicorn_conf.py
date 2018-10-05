@@ -52,9 +52,9 @@ def post_fork(server, worker):
     for category in CATEGORY_MAP:
         for content_type in CATEGORY_MAP[category]:
             for lang in CATEGORY_MAP[category][content_type]:
-                end_point = CATEGORY_MAP[category][content_type][lang]
+                end_point, title = CATEGORY_MAP[category][content_type][lang]
                 k = "{}|{}".format(lang.upper(), end_point.lower())
-                data[k] = (content_type.upper(), category.lower())
+                data[k] = (content_type.upper(), category.lower(), title)
     __builtin__.CATEGORY_MAP = data
 
     print "gunicorn worker conneted to db"
