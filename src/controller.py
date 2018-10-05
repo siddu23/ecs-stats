@@ -97,6 +97,7 @@ def get_recent_published(**kwargs):
                             'ratings': rating_dict,
                             'librarys': library_dict,
                             'total_pratilipis': total_pratilipis,
+                            'title': kwargs['title'],
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
@@ -153,6 +154,7 @@ def get_read_time(**kwargs):
                             'ratings': rating_dict,
                             'librarys': library_dict,
                             'total_pratilipis': total_pratilipis,
+                            'title': kwargs['title'],
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
@@ -208,6 +210,7 @@ def get_high_rated(**kwargs):
                             'ratings': rating_dict,
                             'librarys': library_dict,
                             'total_pratilipis': total_pratilipis,
+                            'title': kwargs['title'],
                             'limit': kwargs['limit'],
                             'offset': kwargs['offset'] }
 
