@@ -647,7 +647,7 @@ def get_for_you_init(**kwargs):
         count = 0
 
         while len(pratilipis) < 5 and count < 4:
-            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you(kwargs['user_id'], query_offset)
+            pratilipi_similarity, offset, offset_similarity = cognition.get_for_you_init(kwargs['user_id'], query_offset)
             for x in pratilipi_similarity:
                 if x['pratilipi_1'] not in pratilipi_ids_list:
                     pratilipi_ids_list.append(x['pratilipi_1'])
@@ -670,6 +670,8 @@ def get_for_you_init(**kwargs):
         }
 
         return bottle.HTTPResponse(status=200, body=response)
+    except NoDataFound as err:
+        return bottle.HTTPResponse(status=400)
     except UserIdRequired as err:
         return bottle.HTTPResponse(status=400)
     except Exception as err:

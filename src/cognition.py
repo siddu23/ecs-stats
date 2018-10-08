@@ -1131,6 +1131,7 @@ def get_reader_dashboard_stats(user_id):
     return stats
 
 
+
 def get_for_you(user_id, offset):
     try:
         offset_array = offset.split("-")
@@ -1184,6 +1185,67 @@ def get_for_you(user_id, offset):
             cursor_ds.execute(sql)
             record_set = cursor_ds.fetchall()
             pratilipi_similarity.extend(record_set)
+
+        offset = offset + 5
+        return pratilipi_similarity, offset, offset_similarity
+    except NoDataFound as err:
+        raise NoDataFound(err)
+    except Exception as err:
+        raise DbSelectError(err)
+    finally:
+        disconnectdb(conn)
+
+
+def get_for_you_init(user_id, offset):
+    try:
+        offset_array = offset.split("-")
+        offset = int(offset_array[0]) if int(offset_array[0]) > 0 else 0
+        offset_similarity = int(offset_array[1]) if int(offset_array[1]) > 0 else 0
+
+        conn = connectdb()
+        cursor = conn.cursor()
+
+        conn_ds = connect_datascience_db()
+        cursor_ds = conn_ds.cursor()
+
+        sql = """SELECT pratilipi_id from user_pratilipi.user_pratilipi
+                where user_id = {}
+                and property='READ_WORD_COUNT'
+                and property_value > 200
+                order by updated_at limit 5 offset {}""".format(user_id, offset)
+        cursor.execute(sql)
+        record_set = cursor.fetchall()
+
+        pratilipi_similarity = []
+
+        if len(record_set) == 0:
+            raise NoDataFound("No user found with the given id")
+
+        pratilipis_1 = [str(x['pratilipi_id']) for x in record_set]
+        pratilipis_str = ",".join(pratilipis_1)
+
+        sql = """SELECT * FROM
+                 (SELECT *, @rank := IF(@current_ptlp = pratilipi_1, @rank + 1, 1) AS rank, @current_ptlp := pratilipi_1 
+                   FROM similarity.pratilipi_similarity where pratilipi_1 in ({})
+                   ORDER BY pratilipi_1, similarity DESC
+                 ) ranked
+                 where rank > {} and rank < {};""".format(pratilipis_str, offset_similarity, offset_similarity + 5)
+
+        cursor_ds.execute(sql)
+        record_set = cursor_ds.fetchall()
+        pratilipi_similarity.extend(record_set)
+
+        sql = """SELECT * FROM
+                         (SELECT *, @rank := IF(@current_ptlp = pratilipi_2, @rank + 1, 1) AS rank, @current_ptlp := pratilipi_2 
+                           FROM similarity.pratilipi_similarity where pratilipi_2 in ({})
+                           ORDER BY pratilipi_2, similarity DESC
+                         ) ranked
+                         where rank > {} and rank < {};""".format(pratilipis_str, offset_similarity,
+                                                                  offset_similarity + 5)
+
+        cursor_ds.execute(sql)
+        record_set = cursor_ds.fetchall()
+        pratilipi_similarity.extend(record_set)
 
         offset = offset + 5
         return pratilipi_similarity, offset, offset_similarity
