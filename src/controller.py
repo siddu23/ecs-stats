@@ -612,6 +612,7 @@ def get_for_you(**kwargs):
                 rating_dict = _object_to_dict(ratings)
 
             offset = str(offset) + "-" + str(offset_similarity)
+            pratilipi_ids_list = pratilipi_ids_list[:30]
             response_kwargs = {'pratilipi_id_list' : pratilipi_ids_list,
                                'pratilipis': pratilipi_dict,
                                'authors': author_dict,
@@ -662,6 +663,7 @@ def get_for_you_init(**kwargs):
             query_offset = str(offset) + "-" + str(offset_similarity)
 
         pratilipi_ids_list = [str(x['id']) for x in pratilipis]
+        pratilipi_ids_list = pratilipi_ids_list[:20]
         response = {
             'ids' : pratilipi_ids_list,
             'offset' : query_offset,

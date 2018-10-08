@@ -1204,7 +1204,6 @@ def get_for_you(user_id, offset):
         cursor_ds.execute(sql)
         record_set = cursor_ds.fetchall()
         pratilipi_similarity.extend(record_set)
-        pratilipi_similarity = pratilipi_similarity[:30]
         offset = offset + 5
         return pratilipi_similarity, offset, offset_similarity
     except NoDataFound as err:
@@ -1265,7 +1264,6 @@ def get_for_you_init(user_id, offset):
         cursor_ds.execute(sql)
         record_set = cursor_ds.fetchall()
         pratilipi_similarity.extend(record_set)
-        pratilipi_similarity = pratilipi_similarity[:30]
         offset = offset + 5
         return pratilipi_similarity, offset, offset_similarity
     except NoDataFound as err:
