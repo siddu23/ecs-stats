@@ -1177,14 +1177,33 @@ def get_for_you(user_id, offset):
 
 
         pratilipi_similarity = []
-        for x in record_set:
-            sql = """ SELECT * FROM similarity.pratilipi_similarity
-                    where pratilipi_1 = {}
-                    OR pratilipi_2 = {}
-                    order by similarity desc limit 5 offset {}""".format(x['pratilipi_id'], x['pratilipi_id'], offset_similarity)
-            cursor_ds.execute(sql)
-            record_set = cursor_ds.fetchall()
-            pratilipi_similarity.extend(record_set)
+
+        pratilipis_1 = [str(x['pratilipi_id']) for x in record_set]
+        pratilipis_str = ",".join(pratilipis_1)
+
+        sql = """SELECT * FROM
+                         (SELECT *, @rank := IF(@current_ptlp = pratilipi_1, @rank + 1, 1) AS rank, @current_ptlp := pratilipi_1 
+                           FROM similarity.pratilipi_similarity where pratilipi_1 in ({})
+                           ORDER BY pratilipi_1, similarity DESC
+                         ) ranked
+                         where rank > {} and rank < {};""".format(pratilipis_str, offset_similarity,
+                                                                  offset_similarity + 5)
+
+        cursor_ds.execute(sql)
+        record_set = cursor_ds.fetchall()
+        pratilipi_similarity.extend(record_set)
+
+        sql = """SELECT * FROM
+                         (SELECT *, @rank := IF(@current_ptlp = pratilipi_2, @rank + 1, 1) AS rank, @current_ptlp := pratilipi_2 
+                           FROM similarity.pratilipi_similarity where pratilipi_2 in ({})
+                           ORDER BY pratilipi_2, similarity DESC
+                         ) ranked
+                         where rank > {} and rank < {};""".format(pratilipis_str, offset_similarity,
+                                                                  offset_similarity + 5)
+
+        cursor_ds.execute(sql)
+        record_set = cursor_ds.fetchall()
+        pratilipi_similarity.extend(record_set)
 
         offset = offset + 5
         return pratilipi_similarity, offset, offset_similarity
