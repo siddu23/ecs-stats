@@ -1151,7 +1151,7 @@ def get_for_you(user_id, offset):
                 where user_id = {}
                 and property='READ_WORD_COUNT'
                 and property_value > 200
-                order by updated_at limit 10 offset {}""".format(user_id, offset)
+                order by updated_at limit 5 offset {}""".format(user_id, offset)
 
         cursor.execute(sql)
         record_set = cursor.fetchall()
@@ -1169,7 +1169,7 @@ def get_for_you(user_id, offset):
                             where user_id = {}
                             and property='READ_WORD_COUNT'
                             and property_value > 200
-                            order by updated_at limit 10 offset {}""".format(user_id, offset)
+                            order by updated_at limit 5 offset {}""".format(user_id, offset)
 
             cursor.execute(sql)
             record_set = cursor.fetchall()
@@ -1185,7 +1185,7 @@ def get_for_you(user_id, offset):
             record_set = cursor_ds.fetchall()
             pratilipi_similarity.extend(record_set)
 
-        offset = offset + 10
+        offset = offset + 5
         return pratilipi_similarity, offset, offset_similarity
     except NoDataFound as err:
         raise NoDataFound(err)
