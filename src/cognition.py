@@ -176,7 +176,6 @@ def get_recent_published(kwargs):
         conn = connectdb_replica()
         cursor = conn.cursor()
 
-        print kwargs
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                  WHERE a.id = c.pratilipi_id
@@ -195,7 +194,6 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -224,7 +222,6 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -234,7 +231,7 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
-    if record_set is None: raise PratilipiNotFound
+    if record_set is None or record_set is (): raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
@@ -291,7 +288,7 @@ def get_read_time(kwargs):
     finally:
         disconnectdb(conn)
 
-    if record_set is None: raise PratilipiNotFound
+    if record_set is None or record_set is (): raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
@@ -305,7 +302,6 @@ def get_high_rated(kwargs):
         conn = connectdb_replica()
         cursor = conn.cursor()
 
-        print kwargs
         sql = """SELECT COUNT(*) as cnt
                  FROM (SELECT reference_id, avg(rating) as avg_rating, COUNT(*) as no_of_rating
                        FROM social.review d
@@ -332,7 +328,6 @@ def get_high_rated(kwargs):
                                                               kwargs['content_type'],
                                                               kwargs['internal_category_name'],
                                                               kwargs['language'] )
-        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -368,7 +363,6 @@ def get_high_rated(kwargs):
                                       kwargs['language'],
                                       kwargs['limit'],
                                       kwargs['offset'] )
-        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
@@ -390,7 +384,7 @@ def get_high_rated(kwargs):
     finally:
         disconnectdb(conn)
 
-    if record_set is None: raise PratilipiNotFound
+    if record_set is None or record_set is (): raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
