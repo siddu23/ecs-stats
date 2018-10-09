@@ -65,12 +65,12 @@ def _dict_to_dict(obj):
 def get_recent_published(**kwargs):
     """get recent published pratilipi"""
     try:
-        print("into recent published")
+        sys.stdout.write("into recent published")
         sys.stdout.flush()
 
         # query param
         kwargs = transform_request(kwargs)
-        print(kwargs)
+        sys.stdout.write(kwargs)
         sys.stdout.flush()
 
         # validate request
@@ -78,21 +78,21 @@ def get_recent_published(**kwargs):
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_recent_published(kwargs)
-        print("got data from recent_published")
+        sys.stdout.write("got data from recent_published")
         sys.stdout.flush()
 
         # get authors related to pratilipis
         author_ids = _join_authorids(pratilipis)
         authors = cognition.get_authors(author_ids)
         author_dict = _object_to_dict(authors)
-        print("get author recent_published")
+        sys.stdout.write("get author recent_published")
         sys.stdout.flush()
 
         # get ratings related to pratilipis
         pratilipi_ids = _join_pratilipiids(pratilipis)
         ratings = cognition.get_ratings(pratilipi_ids)
         rating_dict = _object_to_dict(ratings)
-        print("get rating recent_published")
+        sys.stdout.write("get rating recent_published")
         sys.stdout.flush()
 
         # get library related to pratilipis
