@@ -176,6 +176,7 @@ def get_recent_published(kwargs):
         conn = connectdb_replica()
         cursor = conn.cursor()
 
+        print kwargs
         sql = """SELECT COUNT(*) as cnt
                  FROM pratilipi.pratilipi a, pratilipi.categories b, pratilipi.pratilipis_categories c
                  WHERE a.id = c.pratilipi_id
@@ -304,6 +305,7 @@ def get_high_rated(kwargs):
         conn = connectdb_replica()
         cursor = conn.cursor()
 
+        print kwargs
         sql = """SELECT COUNT(*) as cnt
                  FROM (SELECT reference_id, avg(rating) as avg_rating, COUNT(*) as no_of_rating
                        FROM social.review d
