@@ -194,7 +194,7 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
-        print(sql)
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -223,7 +223,7 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
-        print(sql)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -330,7 +330,7 @@ def get_high_rated(kwargs):
                                                               kwargs['content_type'],
                                                               kwargs['internal_category_name'],
                                                               kwargs['language'] )
-        print(sql)
+        print sql
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -366,7 +366,7 @@ def get_high_rated(kwargs):
                                       kwargs['language'],
                                       kwargs['limit'],
                                       kwargs['offset'] )
-        print(sql)
+        print sql
         cursor.execute(sql)
         record_set = cursor.fetchall()
 
