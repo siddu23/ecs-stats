@@ -3,6 +3,7 @@
 
 import __builtin__
 import json
+import sys
 
 from itertools import islice
 from model import *
@@ -173,7 +174,7 @@ def get_authors_for_feed(author_ids, user_ids):
 def get_recent_published(kwargs):
     """get recent published"""
     try:
-        print("getting data for recent_published")
+        sys.stdout.write("getting data for recent_published")
         sys.stdout.flush()
 
         conn = connectdb_replica()
@@ -197,7 +198,7 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
-        print(sql)
+        sys.stdout.write(sql)
         sys.stdout.flush()
 
         cursor.execute(sql)
@@ -228,7 +229,7 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
-        print(sql)
+        sys.stdout.write(sql)
         sys.stdout.flush()
 
         cursor.execute(sql)
@@ -240,12 +241,12 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
-    print("--------------")
-    print(record_set)
+    sys.stdout.write("----------------------")
+    sys.stdout.write(record_set)
     sys.stdout.flush()
 
     if record_set is None or record_set is (): raise PratilipiNotFound
-    print("mein yaha hu")
+    sys.stdout.write("mein yaha hu")
     sys.stdout.flush()
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
