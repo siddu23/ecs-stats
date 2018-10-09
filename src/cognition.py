@@ -173,6 +173,8 @@ def get_authors_for_feed(author_ids, user_ids):
 def get_recent_published(kwargs):
     """get recent published"""
     try:
+        print("getting data for recent_published")
+
         conn = connectdb_replica()
         cursor = conn.cursor()
 
@@ -194,6 +196,7 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
+        print(sql)
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -222,6 +225,7 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
+        print(sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -231,8 +235,10 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
-    print "------------> ", record_set
+    print("--------------")
+    print(record_set)
     if record_set is None or record_set is (): raise PratilipiNotFound
+    print("mein yaha hu")
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
