@@ -174,9 +174,6 @@ def get_authors_for_feed(author_ids, user_ids):
 def get_recent_published(kwargs):
     """get recent published"""
     try:
-        sys.stdout.write("getting data for recent_published")
-        sys.stdout.flush()
-
         conn = connectdb_replica()
         cursor = conn.cursor()
 
@@ -198,9 +195,6 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
-        sys.stdout.write(sql)
-        sys.stdout.flush()
-
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -229,9 +223,6 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
-        sys.stdout.write(sql)
-        sys.stdout.flush()
-
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -241,13 +232,7 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
-    sys.stdout.write("----------------------")
-    sys.stdout.write(record_set)
-    sys.stdout.flush()
-
-    if record_set is None or record_set is (): raise PratilipiNotFound
-    sys.stdout.write("mein yaha hu")
-    sys.stdout.flush()
+    if cursor.rowcount == 0: raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
@@ -304,7 +289,7 @@ def get_read_time(kwargs):
     finally:
         disconnectdb(conn)
 
-    if record_set is None or record_set is (): raise PratilipiNotFound
+    if cursor.rowcount == 0: raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
@@ -400,7 +385,7 @@ def get_high_rated(kwargs):
     finally:
         disconnectdb(conn)
 
-    if record_set is None or record_set is (): raise PratilipiNotFound
+    if cursor.rowcount == 0: raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
