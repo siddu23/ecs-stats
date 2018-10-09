@@ -231,6 +231,7 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
+    print "------------> ", record_set
     if record_set is None or record_set is (): raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
