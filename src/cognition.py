@@ -174,6 +174,7 @@ def get_recent_published(kwargs):
     """get recent published"""
     try:
         print("getting data for recent_published")
+        sys.stdout.flush()
 
         conn = connectdb_replica()
         cursor = conn.cursor()
@@ -197,6 +198,8 @@ def get_recent_published(kwargs):
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
         print(sql)
+        sys.stdout.flush()
+
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -226,6 +229,8 @@ def get_recent_published(kwargs):
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
         print(sql)
+        sys.stdout.flush()
+
         cursor.execute(sql)
         record_set = cursor.fetchall()
     except PratilipiNotFound as err:
@@ -237,8 +242,11 @@ def get_recent_published(kwargs):
 
     print("--------------")
     print(record_set)
+    sys.stdout.flush()
+
     if record_set is None or record_set is (): raise PratilipiNotFound
     print("mein yaha hu")
+    sys.stdout.flush()
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
     for indx, row in enumerate(record_set):
