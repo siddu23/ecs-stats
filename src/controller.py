@@ -118,7 +118,7 @@ def get_recent_published(**kwargs):
         return bottle.HTTPResponse(status=404)
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
-        return bottle.HTTPResponse(status=500, body={"message": str(err)})
+        return bottle.HTTPResponse(status=500, body={"message": str(err), "kwargs": kwargs})
 
 @timeit
 @request_parser
