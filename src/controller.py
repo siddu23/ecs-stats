@@ -67,15 +67,12 @@ def get_recent_published(**kwargs):
     try:
         # query param
         kwargs = transform_request(kwargs)
-        log(inspect.stack()[0][3], "INFO", "args", kwargs)
 
         # validate request
         validate_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_recent_published(kwargs)
-        log(inspect.stack()[0][3], "INFO", "after data", pratilipis)
-        if len(pratilipis) == 0: raise PratilipiNotFound
 
         # get authors related to pratilipis
         author_ids = _join_authorids(pratilipis)
@@ -109,16 +106,12 @@ def get_recent_published(**kwargs):
         sys.stdout.flush()
         return bottle.HTTPResponse(status=200, body=response)
     except LanguageRequired as err:
-        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except LanguageInvalid as err:
-        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=400, body={"message": str(err)})
     except CategoryNotFound as err:
-        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=404)
     except PratilipiNotFound as err:
-        log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
         return bottle.HTTPResponse(status=404)
     except Exception as err:
         log(inspect.stack()[0][3], "ERROR", str(err), kwargs)
