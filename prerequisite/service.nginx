@@ -15,6 +15,14 @@ server {
         proxy_cache_valid 200 1400m;
     }
 
+    location /stats/v1.0/recent_published {
+        proxy_pass http://unix:/service/service.sock;
+        proxy_cache_min_uses 1;
+        proxy_cache_valid 200 1200m;
+        proxy_cache_key $request_uri;
+        proxy_cache_bypass $http_secret_header;
+    }
+
     location /stats/v1.0/high_rated {
         proxy_pass http://unix:/service/service.sock;
         proxy_cache_min_uses 1;
