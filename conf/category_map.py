@@ -151,13 +151,13 @@ CATEGORY_MAP = {
     },
     "biography": {
         "ARTICLE": {
-            "GUJARATI": ("jivan-charitra", "List"),
+            "GUJARATI": ("jivan-charitra", "જીવનચરિત્ર"),
             "TAMIL": ("biography", "List"),
             "BENGALI": ("article-biography", "List"),
             "TELUGU": ("article-biography", "List"),
             "KANNADA": ("article-biography", "List"),
-            "HINDI": ("jivani-evam-atmakatha", "List"),
-            "MARATHI": ("jivancharitra", "List"),
+            "HINDI": ("jivani-evam-atmakatha", "जीवनी एवं चरित्र"),
+            "MARATHI": ("jivancharitra", "जीवन-चरित्र"),
             "MALAYALAM": ("article-biography", "List")
         }
     },
@@ -213,7 +213,7 @@ CATEGORY_MAP = {
     },
     "cookery": {
         "ARTICLE": {
-            "MARATHI": ("swadishta-pakkala", "List")
+            "MARATHI": ("swadishta-pakkala", "पाककला")
         }
     },
     "cooking": {
@@ -233,12 +233,12 @@ CATEGORY_MAP = {
             "BENGALI": ("article-health", "List"),
             "TELUGU": ("article-health", "List"),
             "KANNADA": ("article-health", "List"),
-            "GUJARATI": ("arogya-sukh", "List")
+            "GUJARATI": ("arogya-sukh", "આરોગ્ય સુખ")
         }
     },
     "history": {
         "ARTICLE": {
-            "MARATHI": ("historical", "List"),
+            "MARATHI": ("historical", "ऐतिहासिक"),
             "TELUGU": ("article-history", "List"),
             "KANNADA": ("article-history", "List"),
             "BENGALI": ("article-history", "List"),
@@ -278,8 +278,8 @@ CATEGORY_MAP = {
     },
     "music-and-movies": {
         "ARTICLE": {
-            "GUJARATI": ("film-and-music", "List"),
-            "TAMIL": ("cinema", "List")
+            "GUJARATI": ("film-and-music", "ફિલ્મ અને મ્યુઝીક"),
+            "TAMIL": ("cinema", "சினிமா")
         }
     },
     "political": {
@@ -296,26 +296,26 @@ CATEGORY_MAP = {
     },
     "selfhelp": {
         "ARTICLE": {
-            "GUJARATI": ("self-help", "List"),
+            "GUJARATI": ("self-help", "સેલ્ફ-હેલ્પ"),
             "TAMIL": ("selfhelp", "List"),
-            "BENGALI": ("swabikash", "List"),
+            "BENGALI": ("swabikash", "স্ব-বিকাশ"),
             "MALAYALAM": ("article-selfhelp", "List"),
             "KANNADA": ("article-selfhelp", "List"),
             "MARATHI": ("article-selfhelp", "List"),
             "TELUGU": ("article-selfhelp", "List"),
-            "HINDI": ("self-help", "List")
+            "HINDI": ("self-help", "स्व - विकास")
         }
     },
     "travel": {
         "ARTICLE": {
-            "GUJARATI": ("pravas-ane-yatra", "List"),
+            "GUJARATI": ("pravas-ane-yatra", "પ્રવાસ અને યાત્રા"),
             "TAMIL": ("travel", "List"),
             "TELUGU": ("article-travel", "List"),
             "BENGALI": ("article-travel", "List"),
-            "HINDI": ("yatra-vrutant", "List"),
+            "HINDI": ("yatra-vrutant", "यात्रा – वृत्तांत"),
             "KANNADA": ("article-travel", "List"),
             "MALAYALAM": ("article-travel", "List"),
-            "MARATHI": ("pravas-varnan", "List")
+            "MARATHI": ("pravas-varnan", "प्रवास वर्णन")
         },
         "STORY": {
             "BENGALI": ("bhromonkahini", "ভ্রমণকাহিনী"),
@@ -357,7 +357,7 @@ CATEGORY_MAP = {
     "gazal": {
         "POEM": {
             "GUJARATI": ("gazal", "List"),
-            "HINDI": ("gazals", "List"),
+            "HINDI": ("gazals", "ग़ज़ल"),
             "MARATHI": ("poem-gazal", "List"),
             "TELUGU": ("poem-gazal", "List")
         }
@@ -412,7 +412,7 @@ CATEGORY_MAP = {
             "TELUGU": ("poem-life", "జీవితం")
         },
         "STORY": {
-            "MALAYALAM": ("lives", "List")
+            "MALAYALAM": ("lives", "ജീവിതങ്ങള്‍")
         }
     },
     "love-poems": {
@@ -586,7 +586,7 @@ CATEGORY_MAP = {
             "GUJARATI": ("moral-inspiring", "List"),
             "HINDI": ("moral-inspiring", "List"),
             "KANNADA": ("inspirational", "ಸ್ಫೂರ್ತಿದಾಯಕ"),
-            "MARATHI": ("bodhkatha", "List"),
+            "MARATHI": ("bodhkatha", "बोधकथा"),
             "TELUGU": ("story-moral-inspiring", "List")
         }
     },
@@ -603,7 +603,7 @@ CATEGORY_MAP = {
             "HINDI": ("upanyas", "उपन्यास"),
             "KANNADA": ("story-novels", "List"),
             "MALAYALAM": ("story-novels", "List"),
-            "MARATHI": ("kadambari", "List"),
+            "MARATHI": ("kadambari", "कादंबरी"),
             "TAMIL": ("novels", "நாவல்கள்"),
             "TELUGU": ("novels", "నవలలు")
         }
@@ -629,18 +629,6 @@ CATEGORY_MAP = {
             "MALAYALAM": ("story-shortstories", "മറ്റു കഥകള്‍"),
             "MARATHI": ("story-shortstories", "List"),
             "TELUGU": ("story-shortstories", "కథలు")
-        }
-    },
-    "serialized": {
-        "STORY": {
-            "BENGALI": ("serialized-stories", "ধারাবাহিক কাহিনী"),
-            "GUJARATI": ("serialized-stories", "ધારાવાહિક વાર્તાઓ"),
-            "HINDI": ("serialized-stories", "धारावाहिक कहानियाँ"),
-            "KANNADA": ("serialized-stories", "ಧಾರಾವಾಹಿ"),
-            "MALAYALAM": ("serialized-stories", "തുടര്‍ക്കഥകള്‍"),
-            "MARATHI": ("serialized-stories", "कथा मालिका"),
-            "TAMIL": ("serialized-stories", "தொடர்கதைகள்"),
-            "TELUGU": ("serialized-stories", "ధారావాహికలు")
         }
     }
 }
