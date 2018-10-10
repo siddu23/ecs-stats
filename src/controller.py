@@ -67,14 +67,14 @@ def get_recent_published(**kwargs):
     try:
         # query param
         kwargs = transform_request(kwargs)
+        log(inspect.stack()[0][3], "INFO", "args", kwargs)
 
         # validate request
         validate_request(kwargs)
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_recent_published(kwargs)
-        print "after data ", pratilipis
-        print "len of data ", len(pratilipis)
+        log(inspect.stack()[0][3], "INFO", "after data", pratilipis)
         if len(pratilipis) == 0: raise PratilipiNotFound
 
         # get authors related to pratilipis
