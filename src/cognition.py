@@ -195,6 +195,7 @@ def get_recent_published(kwargs):
                                                   kwargs['content_type'],
                                                   kwargs['internal_category_name'],
                                                   kwargs['language'] )
+        log(inspect.stack()[0][3], "INFO", "sql", sql)
         cursor.execute(sql)
         record_count = cursor.fetchone()
         total_pratilipis = record_count.get('cnt', 0)
@@ -223,8 +224,10 @@ def get_recent_published(kwargs):
                                       kwargs['internal_category_name'],
                                       kwargs['language'],
                                       kwargs['limit'], kwargs['offset'] )
+        log(inspect.stack()[0][3], "INFO", "sql", sql)
         cursor.execute(sql)
         record_set = cursor.fetchall()
+        log(inspect.stack()[0][3], "INFO", "data found", record_set)
         print "data found - ", record_set
     except PratilipiNotFound as err:
         raise PratilipiNotFound
@@ -233,7 +236,7 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
-    print "rec found - ", cursor.rowcount
+    log(inspect.stack()[0][3], "INFO", "rec found", cursor.rowcount)
     if cursor.rowcount == 0: raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
