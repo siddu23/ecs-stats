@@ -225,6 +225,7 @@ def get_recent_published(kwargs):
                                       kwargs['limit'], kwargs['offset'] )
         cursor.execute(sql)
         record_set = cursor.fetchall()
+        print "data found - ", record_set
     except PratilipiNotFound as err:
         raise PratilipiNotFound
     except Exception as err:
@@ -232,6 +233,7 @@ def get_recent_published(kwargs):
     finally:
         disconnectdb(conn)
 
+    print "rec found - ", cursor.rowcount
     if cursor.rowcount == 0: raise PratilipiNotFound
 
     obj_list = [ Pratilipi() for i in range(len(record_set)) ]
