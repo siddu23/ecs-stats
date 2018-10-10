@@ -4,6 +4,7 @@
 import __builtin__
 import json
 import sys
+import inspect
 
 from commonfns import log
 from itertools import islice
