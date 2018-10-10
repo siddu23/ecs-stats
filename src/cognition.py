@@ -5,6 +5,7 @@ import __builtin__
 import json
 import sys
 
+from commonfns import log
 from itertools import islice
 from model import *
 from exceptions import *
