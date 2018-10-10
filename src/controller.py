@@ -73,6 +73,7 @@ def get_recent_published(**kwargs):
 
         # get pratilipis
         pratilipis, total_pratilipis = cognition.get_recent_published(kwargs)
+        if len(pratilipis) == 0: raise PratilipiNotFound
 
         # get authors related to pratilipis
         author_ids = _join_authorids(pratilipis)
